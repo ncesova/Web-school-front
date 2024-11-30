@@ -323,6 +323,64 @@
       }
     }
   },
+  "/classroom/teacher": {
+    "get": {
+      "summary": "Get all classrooms where the teacher is an admin",
+      "tags": ["Classrooms"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of classrooms"
+        },
+        "403": {
+          "description": "Not authorized (teacher role required)"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/classroom/{id}/details": {
+    "get": {
+      "summary": "Get detailed classroom information",
+      "tags": ["Classrooms"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Classroom ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Classroom details including admin and student information"
+        },
+        "403": {
+          "description": "Not authorized"
+        },
+        "404": {
+          "description": "Classroom not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
   "/games": {
     "get": {
       "summary": "Get all games",

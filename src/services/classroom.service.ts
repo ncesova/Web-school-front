@@ -55,6 +55,61 @@ export const classroomService = {
     }
   },
 
+  async getTeacherClassrooms(): Promise<Classroom[]> {
+    console.log("Getting teacher's classrooms");
+    try {
+      const token = authService.getToken();
+      console.log("Using token:", token ? "exists" : "missing");
+
+      const response = await fetch(`${API_URL}/classroom/teacher`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Classroom response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API error response:", errorData);
+        throw new Error(errorData.message || "Failed to fetch classrooms");
+      }
+
+      const data = await response.json();
+      console.log("Received classrooms:", data);
+      return data;
+    } catch (error) {
+      console.error("getTeacherClassrooms error:", error);
+      throw error;
+    }
+  },
+
+  async getClassroomDetails(id: string): Promise<Classroom> {
+    console.log("Getting classroom details:", id);
+    try {
+      const token = authService.getToken();
+      const response = await fetch(`${API_URL}/classroom/${id}/details`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || "Failed to fetch classroom details"
+        );
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error("getClassroomDetails error:", error);
+      throw error;
+    }
+  },
+
   async addUsersToClassroom(
     classroomId: string,
     data: AddUsersToClassroomRequest
