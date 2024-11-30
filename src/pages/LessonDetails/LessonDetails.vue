@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, onMounted, watch} from "vue";
+import {ref, onMounted, watch, computed} from "vue";
 import {useRoute} from "vue-router";
 import Header from "../../components/Header.vue";
 import Button from "../../components/ui/Button.vue";
@@ -7,6 +7,8 @@ import BackButton from "../../components/ui/BackButton.vue";
 import {lessonService} from "../../services/lesson.service";
 import {gradeService, type Grade} from "../../services/grade.service";
 import {gameService, type Game} from "../../services/game.service";
+import {authService} from "../../services/auth.service";
+import {UserRole} from "../../types/auth";
 
 interface Lesson {
   id: string;
@@ -60,6 +62,10 @@ const editedGameIds = ref<string[]>([]);
 const availableGames = ref<Game[]>([]);
 const loadingGames = ref(false);
 
+const isStudent = computed(
+  () => authService.getUserRole() === UserRole.Student
+);
+
 const loadLessonData = async () => {
   try {
     loading.value = true;
@@ -69,12 +75,15 @@ const loadLessonData = async () => {
     const lessonData = await lessonService.getLessonById(lessonId);
     lesson.value = lessonData as unknown as Lesson;
 
-    // Load classroom students
-    await loadClassroomStudents();
+    // Only load classroom students and grades if user is not a student
+    if (!isStudent.value) {
+      // Load classroom students
+      await loadClassroomStudents();
 
-    // Load grades
-    const gradesData = await gradeService.getLessonGrades(lessonId);
-    grades.value = gradesData as Grade[];
+      // Load grades
+      const gradesData = await gradeService.getLessonGrades(lessonId);
+      grades.value = gradesData as Grade[];
+    }
 
     // Load games if lesson has gameIds
     if (lessonData.gameIds?.length) {
@@ -415,13 +424,13 @@ watch(showAddGradeModal, (newValue) => {
               </div>
             </div>
             <div class="flex gap-2">
-              <template v-if="!isEditing">
+              <template v-if="!isStudent && !isEditing">
                 <Button @click="startEditing">Редактировать</Button>
                 <Button @click="showAddGradeModal = true">
                   Добавить оценку
                 </Button>
               </template>
-              <template v-else>
+              <template v-if="!isStudent && isEditing">
                 <Button @click="cancelEditing" class="bg-gray-500">
                   Отмена
                 </Button>
@@ -511,8 +520,8 @@ watch(showAddGradeModal, (newValue) => {
             </div>
           </div>
 
-          <!-- Grades Section -->
-          <div>
+          <!-- Grades Section - Only visible for teachers -->
+          <div v-if="!isStudent">
             <h2 class="text-xl font-semibold mb-4">Оценки</h2>
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-gray-200">
@@ -560,7 +569,7 @@ watch(showAddGradeModal, (newValue) => {
 
       <!-- Add Grade Modal -->
       <div
-        v-if="showAddGradeModal"
+        v-if="showAddGradeModal && !isStudent"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg max-w-md w-full">
           <h2 class="text-xl font-bold mb-4">Добавить оценку</h2>

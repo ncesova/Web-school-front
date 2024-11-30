@@ -180,9 +180,11 @@ onMounted(() => {
                   <tbody class="bg-white divide-y divide-gray-200">
                     <tr v-for="lesson in classroom.lessons" :key="lesson.id">
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">
+                        <RouterLink
+                          :to="`/lessons/${lesson.id}`"
+                          class="text-sm font-medium text-main-green hover:text-main-green/80">
                           {{ lesson.name }}
-                        </div>
+                        </RouterLink>
                         <div class="text-sm text-gray-500">
                           {{ lesson.description }}
                         </div>

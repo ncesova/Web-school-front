@@ -63,10 +63,11 @@ import {useRoute} from "vue-router";
 import Button from "../../components/ui/Button.vue";
 import Leaderboard from "../../components/Leaderboard.vue";
 import {leaderboardService} from "../../services/leaderboard.service";
+import {gameService} from "../../services/game.service";
 
 const route = useRoute();
 const lessonId = route.params.id as string;
-const GAME_ID = "robot"; // Unique identifier for this game
+const GAME_ID = ref<string>(""); // Will be set after loading game data
 
 let canvas: HTMLCanvasElement;
 const code = ref("");
@@ -118,6 +119,7 @@ onMounted(() => {
   canvas = document.querySelector("canvas")!;
   ctx.value = canvas.getContext("2d");
   draw();
+  loadGameId(); // Load the game ID when component mounts
 });
 
 const calculateScore = (moves: number): number => {
@@ -145,27 +147,36 @@ const runCode = async () => {
       const score = calculateScore(moves);
       feedback.value = `Задача выполнена! Ваш счет: ${score}`;
 
-      // Submit score to leaderboard with authorization token
-      try {
-        await fetch(`${import.meta.env.VITE_API_URL}/leaderboard`, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            gameId: GAME_ID,
-            value: score,
-          }),
-        });
-        console.log("Score submitted successfully");
-      } catch (err) {
-        console.error("Failed to submit score:", err);
+      // Submit score to leaderboard with game ID from database
+      if (GAME_ID.value) {
+        try {
+          await leaderboardService.addScore(GAME_ID.value, score);
+          console.log("Score submitted successfully");
+        } catch (err) {
+          console.error("Failed to submit score:", err);
+        }
+      } else {
+        console.error("Cannot submit score: Game ID not loaded");
       }
     }
   } catch (error) {
     feedback.value = "Ошибка в коде! Проверьте синтаксис.";
+  }
+};
+
+// Load the actual game ID from the database
+const loadGameId = async () => {
+  try {
+    const games = await gameService.getAllGames();
+    const robotGame = games.find((game) => game.name === "Robot");
+    if (robotGame) {
+      GAME_ID.value = robotGame.id;
+      console.log("Found game ID:", GAME_ID.value);
+    } else {
+      throw new Error("Robot game not found in database");
+    }
+  } catch (err) {
+    console.error("Failed to load game ID:", err);
   }
 };
 </script>

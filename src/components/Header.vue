@@ -3,10 +3,12 @@ import Button from "./ui/Button.vue";
 import {authService} from "../services/auth.service";
 import {computed} from "vue";
 import {useRouter, useRoute} from "vue-router";
+import {UserRole} from "../types/auth";
 
 const router = useRouter();
 const route = useRoute();
 const isAuthenticated = computed(() => authService.isAuthenticated());
+const userRole = computed(() => authService.getUserRole());
 
 const handleLogout = () => {
   authService.logout();
@@ -14,6 +16,7 @@ const handleLogout = () => {
 };
 
 const isTeacherCabinet = computed(() => route.path === "/teacher-cabinet");
+const isStudent = computed(() => userRole.value === UserRole.Student);
 </script>
 
 <template>
@@ -43,6 +46,9 @@ const isTeacherCabinet = computed(() => route.path === "/teacher-cabinet");
         <ul class="flex items-center gap-5">
           <RouterLink to="/cabinet">
             <li class="cursor-pointer">Мой кабинет</li>
+          </RouterLink>
+          <RouterLink v-if="isStudent" :to="`/cabinet`">
+            <li class="cursor-pointer">Мои классы</li>
           </RouterLink>
           <li>
             <Button @click="handleLogout">Выйти</Button>
