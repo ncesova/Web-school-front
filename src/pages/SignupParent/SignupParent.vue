@@ -23,21 +23,17 @@ const handleSubmit = async (e: Event) => {
     loading.value = true;
     error.value = "";
 
-    await authService.signup({
+    const response = await authService.signup({
       username: username.value,
       password: password.value,
-      name: name.value,
-      surname: surname.value,
+      name: name.value || undefined,
+      surname: surname.value || undefined,
       roleId: UserRole.Parent,
     });
 
-    // After successful registration, log in the user
-    await authService.login({
-      username: username.value,
-      password: password.value,
-    });
-
-    router.push("/");
+    if (response.token) {
+      router.push("/cabinet");
+    }
   } catch (err) {
     console.error("Signup error:", err);
     error.value =

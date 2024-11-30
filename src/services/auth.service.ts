@@ -1,4 +1,10 @@
-import type {LoginRequest, LoginResponse, SignupRequest} from "../types/auth";
+import type {
+  LoginRequest,
+  LoginResponse,
+  SignupRequest,
+  SignupResponse,
+  UserRole,
+} from "../types/auth";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -17,16 +23,17 @@ export const authService = {
         throw new Error("Invalid credentials");
       }
 
-      const data = await response.json();
-      // Store the token in localStorage
+      const data: LoginResponse = await response.json();
       localStorage.setItem("token", data.token);
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("roleId", data.roleId);
       return data;
     } catch (error) {
       throw error;
     }
   },
 
-  async signup(userData: SignupRequest): Promise<void> {
+  async signup(userData: SignupRequest): Promise<SignupResponse> {
     try {
       const response = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
@@ -40,6 +47,12 @@ export const authService = {
         const error = await response.json();
         throw new Error(error.message || "Registration failed");
       }
+
+      const data: SignupResponse = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("roleId", data.roleId);
+      return data;
     } catch (error) {
       throw error;
     }
@@ -47,15 +60,25 @@ export const authService = {
 
   logout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("roleId");
   },
 
   getToken() {
     return localStorage.getItem("token");
   },
 
+  getUserId() {
+    return localStorage.getItem("userId");
+  },
+
   isAuthenticated(): boolean {
-    // Check if user has valid token or auth state
     const token = localStorage.getItem("token");
     return !!token;
+  },
+
+  getUserRole(): UserRole | null {
+    const roleId = localStorage.getItem("roleId");
+    return roleId ? (Number(roleId) as UserRole) : null;
   },
 };

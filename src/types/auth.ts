@@ -1,3 +1,9 @@
+export enum UserRole {
+  Student = 1,
+  Parent = 2,
+  Teacher = 3,
+}
+
 export interface LoginRequest {
   username: string;
   password: string;
@@ -5,6 +11,8 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  userId: string;
+  roleId: UserRole;
 }
 
 export interface SignupRequest {
@@ -12,16 +20,16 @@ export interface SignupRequest {
   password: string;
   name?: string;
   surname?: string;
-  roleId: number;
+  roleId: UserRole;
+}
+
+export interface SignupResponse {
+  token: string;
+  userId: string;
+  roleId: UserRole;
 }
 
 export interface ApiError {
   message: string;
   status: number;
-}
-
-export enum UserRole {
-  Student = 1,
-  Parent = 2,
-  Teacher = 3,
 }

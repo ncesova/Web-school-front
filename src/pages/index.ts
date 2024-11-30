@@ -1,4 +1,6 @@
 import Routing from "./index.vue";
+import Cabinet from "./Cabinet";
+import TeacherCabinet from "./TeacherCabinet";
 
 export const routes = [
   {
@@ -29,6 +31,16 @@ export const routes = [
     path: "/",
     component: () => import("./MainPage"),
     name: "Main",
+    meta: {requiresAuth: false},
+  },
+  {
+    path: "/cabinet",
+    component: Cabinet,
+    meta: {requiresAuth: true},
+  },
+  {
+    path: "/teacher-cabinet",
+    component: TeacherCabinet,
     meta: {requiresAuth: true},
   },
 ];

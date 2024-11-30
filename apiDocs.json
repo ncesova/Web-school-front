@@ -1,0 +1,1573 @@
+{
+  "/auth/signup": {
+    "post": {
+      "summary": "Register a new user",
+      "tags": ["Auth"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["username", "password", "roleId"],
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "description": "User's username"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "User's password"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "User's first name"
+                },
+                "surname": {
+                  "type": "string",
+                  "description": "User's last name"
+                },
+                "roleId": {
+                  "type": "integer",
+                  "description": "User's role (1 = student, 2 = parent, 3 = teacher)"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "User created successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "JWT token for authentication"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "User's unique ID"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/auth/register-child": {
+    "post": {
+      "summary": "Register a new child (parents only)",
+      "tags": ["Auth"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["username", "password"],
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "description": "Child's username"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "Child's password"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Child's first name"
+                },
+                "surname": {
+                  "type": "string",
+                  "description": "Child's last name"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Child registered successfully"
+        },
+        "400": {
+          "description": "Invalid input or username already exists"
+        },
+        "403": {
+          "description": "Not authorized (parent role required)"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/auth/login": {
+    "post": {
+      "summary": "Login user",
+      "tags": ["Auth"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["username", "password"],
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Login successful",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "JWT token for authentication"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "User's unique ID"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/classroom": {
+    "post": {
+      "summary": "Create a new classroom (teachers only)",
+      "tags": ["Classrooms"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Classroom created successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Classroom"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not authorized (teacher role required)"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/classroom/{id}": {
+    "delete": {
+      "summary": "Delete a classroom (teachers only)",
+      "tags": ["Classrooms"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Classroom ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Classroom deleted successfully"
+        },
+        "403": {
+          "description": "Not authorized or not classroom admin"
+        },
+        "404": {
+          "description": "Classroom not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/classroom/{id}/users": {
+    "post": {
+      "summary": "Add users to classroom (teachers only)",
+      "tags": ["Classrooms"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Classroom ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["userIds"],
+              "properties": {
+                "userIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Array of user IDs to add (teachers will be added as admins, students as students)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "delete": {
+      "summary": "Remove multiple users from classroom",
+      "tags": ["Classrooms"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Classroom ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["userIds"],
+              "properties": {
+                "userIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/games": {
+    "get": {
+      "summary": "Get all games",
+      "tags": ["Games"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of games",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Game"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "post": {
+      "summary": "Create a new game",
+      "tags": ["Games"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Game created successfully"
+        },
+        "403": {
+          "description": "Only teachers can create games"
+        }
+      }
+    }
+  },
+  "/games/{id}": {
+    "get": {
+      "summary": "Get a game by ID",
+      "tags": ["Games"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Game ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Game details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Game"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Game not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    },
+    "put": {
+      "summary": "Update a game (teachers only)",
+      "tags": ["Games"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Game ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Game updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Game"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not authorized (teacher role required)"
+        },
+        "404": {
+          "description": "Game not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    },
+    "delete": {
+      "summary": "Delete a game (teachers only)",
+      "tags": ["Games"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Game ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Game deleted successfully"
+        },
+        "403": {
+          "description": "Not authorized (teacher role required)"
+        },
+        "404": {
+          "description": "Game not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/grades/lesson/{lessonId}": {
+    "post": {
+      "summary": "Add or update a grade for a student (teachers only)",
+      "tags": ["Grades"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "lessonId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["studentId", "grade"],
+              "properties": {
+                "studentId": {
+                  "type": "string"
+                },
+                "grade": {
+                  "type": "integer"
+                },
+                "comment": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "get": {
+      "summary": "Get all grades for a lesson (teachers only)",
+      "tags": ["Grades"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "lessonId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "/grades/student/{studentId}": {
+    "get": {
+      "summary": "Get all grades for a student",
+      "tags": ["Grades"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "studentId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "/grades/lesson/{lessonId}/student/{studentId}": {
+    "delete": {
+      "summary": "Delete a grade (teachers only)",
+      "tags": ["Grades"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "lessonId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "path",
+          "name": "studentId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "/grades/classroom/{classroomId}": {
+    "get": {
+      "summary": "Get all grades in a classroom (teachers only)",
+      "tags": ["Grades"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "classroomId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "/": {
+    "get": {
+      "summary": "Get API welcome message",
+      "tags": ["Index"],
+      "responses": {
+        "200": {
+          "description": "Welcome message",
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "example": "Hello World"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/leaderboard": {
+    "post": {
+      "summary": "Add a new score",
+      "tags": ["Leaderboard"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["gameId", "value"],
+              "properties": {
+                "gameId": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Score added successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeaderboardEntry"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "User must be in a classroom"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/leaderboard/game/{gameId}": {
+    "get": {
+      "summary": "Get game leaderboard",
+      "tags": ["Leaderboard"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "gameId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "page",
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          }
+        },
+        {
+          "in": "query",
+          "name": "limit",
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Paginated leaderboard entries",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LeaderboardEntry"
+                    }
+                  },
+                  "pagination": {
+                    "type": "object",
+                    "properties": {
+                      "total": {
+                        "type": "integer"
+                      },
+                      "pageSize": {
+                        "type": "integer"
+                      },
+                      "offset": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/leaderboard/classroom/{classroomId}": {
+    "get": {
+      "summary": "Get classroom leaderboard",
+      "tags": ["Leaderboard"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "classroomId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "page",
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          }
+        },
+        {
+          "in": "query",
+          "name": "limit",
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Paginated leaderboard entries for a classroom",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LeaderboardEntry"
+                    }
+                  },
+                  "pagination": {
+                    "type": "object",
+                    "properties": {
+                      "total": {
+                        "type": "integer"
+                      },
+                      "pageSize": {
+                        "type": "integer"
+                      },
+                      "offset": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/leaderboard/user/{userId}": {
+    "get": {
+      "summary": "Get user scores",
+      "tags": ["Leaderboard"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "userId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "page",
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          }
+        },
+        {
+          "in": "query",
+          "name": "limit",
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Paginated scores for a specific user",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LeaderboardEntry"
+                    }
+                  },
+                  "pagination": {
+                    "type": "object",
+                    "properties": {
+                      "total": {
+                        "type": "integer"
+                      },
+                      "pageSize": {
+                        "type": "integer"
+                      },
+                      "offset": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/lessons": {
+    "post": {
+      "summary": "Create a new lesson (teachers only)",
+      "tags": ["Lessons"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["name", "classroomId"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "classroomId": {
+                  "type": "string"
+                },
+                "gameIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/lessons/classroom/{classroomId}": {
+    "get": {
+      "summary": "Get all lessons in a classroom",
+      "tags": ["Lessons"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "classroomId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "/lessons/{id}": {
+    "get": {
+      "summary": "Get a lesson by ID",
+      "tags": ["Lessons"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "put": {
+      "summary": "Update a lesson (teachers only)",
+      "tags": ["Lessons"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "summary": "Delete a lesson (teachers only)",
+      "tags": ["Lessons"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "/lessons/{id}/summary": {
+    "post": {
+      "summary": "Upload lesson summary file (teachers only)",
+      "tags": ["Lessons"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "get": {
+      "summary": "Download lesson summary file",
+      "tags": ["Lessons"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "summary": "Delete lesson summary file (teachers only)",
+      "tags": ["Lessons"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "/parent/children": {
+    "get": {
+      "summary": "Get parent's children",
+      "tags": ["Parent"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of parent's children",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not authorized (parent role required)"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/parent/children/{childId}": {
+    "post": {
+      "summary": "Add a child to parent",
+      "tags": ["Parent"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "childId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Student's user ID to add as child"
+        }
+      ],
+      "responses": {
+        "201": {
+          "description": "Child added successfully"
+        },
+        "400": {
+          "description": "Invalid child ID or user is not a student"
+        },
+        "403": {
+          "description": "Not authorized (parent role required)"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    },
+    "delete": {
+      "summary": "Remove a child from parent",
+      "tags": ["Parent"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "childId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Child's user ID to remove"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Child removed successfully"
+        },
+        "403": {
+          "description": "Not authorized (parent role required)"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/tags": {
+    "get": {
+      "summary": "Get all tags",
+      "tags": ["Tags"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of all tags",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Tag"
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    },
+    "post": {
+      "summary": "Create a new tag (teachers only)",
+      "tags": ["Tags"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Tag created successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Tag"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Tag name already exists"
+        },
+        "403": {
+          "description": "Not authorized (teacher role required)"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/teacher-info": {
+    "get": {
+      "summary": "Get teacher's own information",
+      "tags": ["TeacherInfo"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Teacher information",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeacherInfo"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not authorized (teacher role required)"
+        },
+        "404": {
+          "description": "Information not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    },
+    "post": {
+      "summary": "Create teacher's metadata",
+      "tags": ["TeacherInfo"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "tagsId": {
+                  "type": "string"
+                },
+                "aboutTeacher": {
+                  "type": "string"
+                },
+                "canHelpWith": {
+                  "type": "string"
+                },
+                "resume": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Metadata created successfully"
+        },
+        "400": {
+          "description": "Metadata already exists"
+        },
+        "403": {
+          "description": "Not authorized"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    },
+    "put": {
+      "summary": "Update teacher's metadata",
+      "tags": ["TeacherInfo"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "tagsId": {
+                  "type": "string"
+                },
+                "aboutTeacher": {
+                  "type": "string"
+                },
+                "canHelpWith": {
+                  "type": "string"
+                },
+                "resume": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Metadata updated successfully"
+        },
+        "403": {
+          "description": "Not authorized"
+        },
+        "404": {
+          "description": "Metadata not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    },
+    "delete": {
+      "summary": "Delete teacher's metadata",
+      "tags": ["TeacherInfo"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Metadata deleted successfully"
+        },
+        "403": {
+          "description": "Not authorized"
+        },
+        "404": {
+          "description": "Metadata not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/users": {
+    "get": {
+      "summary": "Get all users (teachers only)",
+      "tags": ["Users"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of all users",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not authorized (teacher role required)"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/users/{id}": {
+    "get": {
+      "summary": "Get user by ID",
+      "tags": ["Users"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "User ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "User details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "User not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "/users/classroom/{classroomId}": {
+    "get": {
+      "summary": "Get all users in a classroom",
+      "tags": ["Users"],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "in": "path",
+          "name": "classroomId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Classroom ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of users in the classroom",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  }
+}
