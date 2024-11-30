@@ -82,6 +82,88 @@ export const userService = {
 
     const users = await response.json();
     // Filter only students (roleId === 1 for students)
-    return users.filter((user) => user.roleId === UserRole.Student);
+    return users.filter((user: User) => user.roleId === UserRole.Student);
+  },
+
+  registerChild: async (childData: {
+    username: string;
+    password: string;
+    name: string;
+    surname: string;
+  }): Promise<User> => {
+    console.log("Registering new child:", childData);
+    const response = await fetch(`${API_URL}/auth/register-child`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(childData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Child registration failed:", error);
+      throw new Error(error.message || "Failed to register child");
+    }
+
+    return response.json();
+  },
+
+  getParentChildren: async (): Promise<User[]> => {
+    console.log("Fetching parent's children");
+    const response = await fetch(`${API_URL}/parent/children`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch children:", response.statusText);
+      throw new Error(`Failed to fetch children: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  getStudentClassrooms: async (studentId: string) => {
+    console.log(`Fetching classrooms for student ${studentId}`);
+    const response = await fetch(`${API_URL}/classroom/student/${studentId}`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch student classrooms:", response.statusText);
+      throw new Error(
+        `Failed to fetch student classrooms: ${response.statusText}`
+      );
+    }
+
+    return response.json();
+  },
+
+  getStudentStats: async (studentId: string) => {
+    console.log(`Fetching stats for student ${studentId}`);
+    const response = await fetch(`${API_URL}/users/${studentId}/stats`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch student stats:", response.statusText);
+      throw new Error(`Failed to fetch student stats: ${response.statusText}`);
+    }
+
+    return response.json();
   },
 };

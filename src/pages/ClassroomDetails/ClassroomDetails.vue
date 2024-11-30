@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref, onMounted, computed, watch} from "vue";
-import {useRoute, useRouter} from "vue-router";
+import {useRoute} from "vue-router";
 import Header from "../../components/Header.vue";
 import Button from "../../components/ui/Button.vue";
 import {classroomService} from "../../services/classroom.service";
@@ -33,6 +33,7 @@ interface Lesson {
 
 interface Grade {
   studentId: string;
+  lessonId: string;
   grade: number;
   comment?: string;
 }
@@ -50,7 +51,6 @@ interface Message {
 }
 
 const route = useRoute();
-const router = useRouter();
 const classroomId = route.params.id as string;
 
 const classroom = ref<ClassroomDetails | null>(null);

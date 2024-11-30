@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Header from "../../components/Header.vue";
-import {ref, onMounted} from "vue";
+import {ref, onMounted, watch} from "vue";
 import {userService} from "../../services/user.service";
 import {authService} from "../../services/auth.service";
 import {classroomService} from "../../services/classroom.service";
@@ -39,12 +39,27 @@ const loadData = async () => {
     // Load classrooms
     console.log("Fetching classrooms...");
     const classroomsData = await classroomService.getTeacherClassrooms();
-    classrooms.value = classroomsData;
+
+    // Load detailed data for each classroom
+    const detailedClassrooms = await Promise.all(
+      classroomsData.map(async (classroom) => {
+        const details = await classroomService.getClassroomDetails(
+          classroom.id
+        );
+        return details;
+      })
+    );
+
+    classrooms.value = detailedClassrooms;
 
     // Update stats
     stats.value.activeClassrooms = classrooms.value.length;
+    // Calculate total students from all classrooms
+    stats.value.totalStudents = classrooms.value.reduce(
+      (total, classroom) => total + (classroom.students?.length || 0),
+      0
+    );
     // You might want to add API endpoints to get these stats
-    stats.value.totalStudents = 0; // This should come from an API
     stats.value.averageGrade = 0; // This should come from an API
   } catch (err) {
     console.error("Failed to load data:", err);
@@ -77,13 +92,18 @@ const getDisplayName = () => {
     : user.value.username;
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("ru-RU", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
+// Add watcher to update stats when classrooms change
+watch(
+  classrooms,
+  async (newClassrooms) => {
+    stats.value.activeClassrooms = newClassrooms.length;
+    stats.value.totalStudents = newClassrooms.reduce(
+      (total, classroom) => total + (classroom.students?.length || 0),
+      0
+    );
+  },
+  {deep: true}
+);
 </script>
 
 <template>

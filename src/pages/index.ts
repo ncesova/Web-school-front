@@ -1,7 +1,8 @@
 import Routing from "./index.vue";
-import Cabinet from "./Cabinet";
 import TeacherCabinet from "./TeacherCabinet";
+import ParentCabinet from "./ParentCabinet/ParentCabinet.vue";
 import CreateClassroom from "./CreateClassroom/CreateClassroom.vue";
+
 export const routes = [
   {
     path: "/login",
@@ -35,7 +36,22 @@ export const routes = [
   },
   {
     path: "/cabinet",
-    component: Cabinet,
+    component: () => {
+      const role = localStorage.getItem("roleId");
+      console.log("role", role);
+      if (role === "3") {
+        return import("./TeacherCabinet/TeacherCabinet.vue");
+      } else if (role === "2") {
+        return import("./ParentCabinet/ParentCabinet.vue");
+      } else {
+        return import("./StudentCabinet/StudentCabinet.vue");
+      }
+    },
+    meta: {requiresAuth: true},
+  },
+  {
+    path: "/parent-cabinet",
+    component: ParentCabinet,
     meta: {requiresAuth: true},
   },
   {

@@ -7,27 +7,21 @@
       <div class="content">
         <h2 class="welcome-title">Добро пожаловать на сайт!</h2>
         <p class="intro-text">Здесь есть полезная информация о продукте.</p>
-        
+
         <!-- Лишний блок -->
         <transition name="fade" @before-leave="beforeLeave" @leave="leave">
-          <div
-            v-if="!errorStatus[1]"
-            class="extra-block"
-            @click="fixError(1)"
-          >
+          <div v-if="!errorStatus[1]" class="extra-block" @click="fixError(1)">
             <p class="error-text">Этот блок не должен быть здесь!</p>
           </div>
         </transition>
 
-        <p class="product-info">Наши продукты помогают вам достичь ваших целей.</p>
-        
+        <p class="product-info">
+          Наши продукты помогают вам достичь ваших целей.
+        </p>
+
         <!-- Лишний текст -->
         <transition name="fade" @before-leave="beforeLeave" @leave="leave">
-          <p
-            v-if="!errorStatus[2]"
-            class="extra-text"
-            @click="fixError(2)"
-          >
+          <p v-if="!errorStatus[2]" class="extra-text" @click="fixError(2)">
             Этот текст не должен быть на странице!
           </p>
         </transition>
@@ -48,39 +42,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import {ref} from "vue";
 
 // Статус ошибок
-const errorStatus = ref({ 1: false, 2: false }); 
+const errorStatus = ref({1: false, 2: false});
 const isFinished = ref(false);
 
 // Обработчик клика по ошибке
 const fixError = (errorId: number) => {
   // Отметим ошибку как исправленную
-  errorStatus.value[errorId] = true;
+  errorStatus.value[errorId as keyof typeof errorStatus.value] = true;
   checkIfFinished();
 };
 
 // Проверка, все ли ошибки исправлены
 const checkIfFinished = () => {
-  if (Object.values(errorStatus.value).every(status => status)) {
+  if (Object.values(errorStatus.value).every((status) => status)) {
     isFinished.value = true;
   }
 };
 
 // Сбрасываем игру
 const resetGame = () => {
-  errorStatus.value = { 1: false, 2: false };
+  errorStatus.value = {1: false, 2: false};
   isFinished.value = false;
 };
 
 // Функции для анимации
-const beforeLeave = (el: HTMLElement) => {
-  el.style.transition = "opacity 0.5s";
+const beforeLeave = (el: Element) => {
+  (el as HTMLElement).style.transition = "opacity 0.5s";
 };
 
-const leave = (el: HTMLElement) => {
-  el.style.opacity = 0;
+const leave = (el: Element) => {
+  (el as HTMLElement).style.opacity = "0";
 };
 </script>
 
@@ -90,7 +84,7 @@ const leave = (el: HTMLElement) => {
   background: linear-gradient(to right, #6a11cb, #2575fc); /* Градиентный фон */
   padding: 50px;
   text-align: center;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   color: #fff;
   min-height: 100vh;
 }
@@ -132,7 +126,12 @@ const leave = (el: HTMLElement) => {
 
 /* Стиль после исправления ошибки */
 .fixed {
-  background-color: rgba(0, 255, 0, 0.7); /* Зеленый фон после исправления ошибки */
+  background-color: rgba(
+    0,
+    255,
+    0,
+    0.7
+  ); /* Зеленый фон после исправления ошибки */
 }
 
 /* Текст ошибки */
@@ -142,10 +141,12 @@ const leave = (el: HTMLElement) => {
 }
 
 /* Анимация для плавного исчезновения */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s;
 }
-.fade-enter, .fade-leave-to {
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 

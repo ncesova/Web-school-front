@@ -7,6 +7,16 @@ import type {
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
+export interface StudentClassroom {
+  id: string;
+  name: string;
+  lessons: {
+    id: string;
+    name: string;
+    description?: string;
+  }[];
+}
+
 export const classroomService = {
   async createClassroom(data: CreateClassroomRequest): Promise<Classroom> {
     console.log("Creating classroom:", data);
@@ -170,5 +180,29 @@ export const classroomService = {
       console.error("removeUsersFromClassroom error:", error);
       throw error;
     }
+  },
+
+  getStudentClassrooms: async (
+    studentId: string
+  ): Promise<StudentClassroom[]> => {
+    console.log(`Fetching classrooms for student ${studentId}`);
+    const response = await fetch(`${API_URL}/classroom/student/${studentId}`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch student classrooms:", response.statusText);
+      throw new Error(
+        `Failed to fetch student classrooms: ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    console.log("Received student classrooms:", data);
+    return data;
   },
 };

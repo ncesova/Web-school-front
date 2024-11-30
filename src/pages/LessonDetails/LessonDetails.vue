@@ -5,7 +5,7 @@ import Header from "../../components/Header.vue";
 import Button from "../../components/ui/Button.vue";
 import BackButton from "../../components/ui/BackButton.vue";
 import {lessonService} from "../../services/lesson.service";
-import {gradeService} from "../../services/grade.service";
+import {gradeService, type Grade} from "../../services/grade.service";
 import {gameService, type Game} from "../../services/game.service";
 
 interface Lesson {
@@ -14,12 +14,6 @@ interface Lesson {
   description?: string;
   gameIds?: string[];
   classroomId: string;
-}
-
-interface Grade {
-  studentId: string;
-  grade: number;
-  comment?: string;
 }
 
 interface Message {
@@ -51,7 +45,6 @@ const gradeValue = ref<number>(0);
 const gradeComment = ref("");
 
 // File upload state
-const selectedFile = ref<File | null>(null);
 const uploadProgress = ref(0);
 
 // Add these refs
@@ -72,14 +65,14 @@ const loadLessonData = async () => {
 
     // Load lesson details
     const lessonData = await lessonService.getLessonById(lessonId);
-    lesson.value = lessonData;
+    lesson.value = lessonData as Lesson;
 
     // Load classroom students
     await loadClassroomStudents();
 
     // Load grades
     const gradesData = await gradeService.getLessonGrades(lessonId);
-    grades.value = gradesData;
+    grades.value = gradesData as Grade[];
 
     // Load games if lesson has gameIds
     if (lessonData.gameIds?.length) {
@@ -263,7 +256,7 @@ const handleUpdateLesson = async () => {
 
     // Refresh lesson data
     const updatedLesson = await lessonService.getLessonById(lessonId);
-    lesson.value = updatedLesson;
+    lesson.value = updatedLesson as Lesson;
 
     // Reset edit mode
     isEditing.value = false;
