@@ -79,6 +79,31 @@ export const routes = [
     component: () => import("./LessonDetails/LessonDetails.vue"),
     meta: {requiresAuth: true},
   },
+  {
+    path: "/lesson/:id/agent",
+    component: () => import("../games/Agent/Agent.vue"),
+    meta: {requiresAuth: true},
+  },
+  {
+    path: "/lesson/:id/pet",
+    component: () => import("../games/Pet/Pet.vue"),
+    meta: {requiresAuth: true},
+  },
+  {
+    path: "/lesson/:id/robot",
+    component: () => import("../games/Robot/Robot.vue"),
+    meta: {requiresAuth: true},
+  },
+  {
+    path: "/lesson/:id/space",
+    component: () => import("../games/Space/Space.vue"),
+    meta: {requiresAuth: true},
+  },
+  {
+    path: "/lesson/:id/testing",
+    component: () => import("../games/Testing/Testing.vue"),
+    meta: {requiresAuth: true},
+  },
 ];
 
 export {Routing};

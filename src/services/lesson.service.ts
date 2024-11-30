@@ -176,6 +176,7 @@ export const lessonService = {
     id: string,
     data: UpdateLessonRequest
   ): Promise<Lesson> => {
+    console.log(`Updating lesson ${id} with data:`, data);
     const response = await fetch(`${API_URL}/lessons/${id}`, {
       method: "PUT",
       headers: {

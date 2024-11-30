@@ -57,6 +57,8 @@ const isEditing = ref(false);
 const editedName = ref("");
 const editedDescription = ref("");
 const editedGameIds = ref<string[]>([]);
+const availableGames = ref<Game[]>([]);
+const loadingGames = ref(false);
 
 const loadLessonData = async () => {
   try {
@@ -237,30 +239,53 @@ const loadClassroomStudents = async () => {
   }
 };
 
+const loadAvailableGames = async () => {
+  try {
+    loadingGames.value = true;
+    const games = await gameService.getAllGames();
+    availableGames.value = games;
+    console.log("Available games:", games);
+  } catch (err) {
+    console.error("Failed to load games:", err);
+    error.value = err instanceof Error ? err.message : "Failed to load games";
+  } finally {
+    loadingGames.value = false;
+  }
+};
+
 const startEditing = () => {
   editedName.value = lesson.value?.name || "";
   editedDescription.value = lesson.value?.description || "";
   editedGameIds.value = lesson.value?.gameIds || [];
   isEditing.value = true;
+  loadAvailableGames();
 };
 
-const handleUpdateLesson = async () => {
+const handleUpdateGames = async () => {
   try {
     if (!lesson.value) return;
 
     await lessonService.updateLesson(lessonId, {
-      name: editedName.value.trim(),
-      description: editedDescription.value.trim() || undefined,
-      gameIds: editedGameIds.value.length > 0 ? editedGameIds.value : undefined,
+      gameIds: editedGameIds.value,
     });
 
     // Refresh lesson data
     const updatedLesson = await lessonService.getLessonById(lessonId);
-    lesson.value = updatedLesson as Lesson;
+    lesson.value = updatedLesson;
+
+    // Refresh games data
+    if (updatedLesson.gameIds?.length) {
+      const gamesData = await gameService.getAllGames();
+      games.value = gamesData.filter((game) =>
+        updatedLesson.gameIds?.includes(game.id)
+      );
+    } else {
+      games.value = [];
+    }
 
     // Reset edit mode
     isEditing.value = false;
-    message.value = {type: "success", text: "Урок успешно обновлен"};
+    message.value = {type: "success", text: "Игры урока обновлены"};
     setTimeout(() => {
       message.value = null;
     }, 3000);
@@ -277,6 +302,45 @@ const cancelEditing = () => {
   editedName.value = "";
   editedDescription.value = "";
   editedGameIds.value = [];
+};
+
+// Add this function to handle all updates
+const handleUpdateLesson = async () => {
+  try {
+    if (!lesson.value) return;
+
+    await lessonService.updateLesson(lessonId, {
+      name: editedName.value,
+      description: editedDescription.value,
+      gameIds: editedGameIds.value,
+    });
+
+    // Refresh lesson data
+    const updatedLesson = await lessonService.getLessonById(lessonId);
+    lesson.value = updatedLesson;
+
+    // Refresh games data
+    if (updatedLesson.gameIds?.length) {
+      const gamesData = await gameService.getAllGames();
+      games.value = gamesData.filter((game) =>
+        updatedLesson.gameIds?.includes(game.id)
+      );
+    } else {
+      games.value = [];
+    }
+
+    // Reset edit mode
+    isEditing.value = false;
+    message.value = {type: "success", text: "Урок успешно обновлен"};
+    setTimeout(() => {
+      message.value = null;
+    }, 3000);
+  } catch (err) {
+    console.error("Failed to update lesson:", err);
+    error.value =
+      err instanceof Error ? err.message : "Failed to update lesson";
+    message.value = {type: "error", text: error.value};
+  }
 };
 
 onMounted(() => {
@@ -398,14 +462,67 @@ watch(showAddGradeModal, (newValue) => {
           </div>
 
           <!-- Games Section -->
-          <div v-if="games.length" class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Игры урока</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div v-if="games.length || isEditing" class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-semibold">Игры урока</h2>
+              <div>
+                <Button v-if="!isEditing" @click="startEditing">
+                  Редактировать игры
+                </Button>
+                <template v-else>
+                  <Button @click="cancelEditing" class="bg-gray-500 mr-2">
+                    Отмена
+                  </Button>
+                  <Button @click="handleUpdateGames"> Сохранить </Button>
+                </template>
+              </div>
+            </div>
+
+            <!-- Games List -->
+            <div
+              v-if="!isEditing"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
                 v-for="game in games"
                 :key="game.id"
                 class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="font-medium">{{ game.name }}</h3>
+                <template v-if="game.url">
+                  <RouterLink
+                    :to="game.url"
+                    class="font-medium text-main-green hover:text-main-green/80 transition-colors">
+                    {{ game.name }}
+                  </RouterLink>
+                </template>
+                <template v-else>
+                  <h3 class="font-medium">{{ game.name }}</h3>
+                </template>
+              </div>
+            </div>
+
+            <!-- Edit Games -->
+            <div v-else>
+              <div v-if="loadingGames" class="text-center py-4">
+                Загрузка списка игр...
+              </div>
+              <div
+                v-else
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div
+                  v-for="game in availableGames"
+                  :key="game.id"
+                  class="bg-gray-50 p-4 rounded-lg flex items-center">
+                  <input
+                    type="checkbox"
+                    :id="game.id"
+                    :value="game.id"
+                    v-model="editedGameIds"
+                    class="h-4 w-4 text-main-green focus:ring-main-green border-gray-300 rounded" />
+                  <label
+                    :for="game.id"
+                    class="ml-3 block text-sm font-medium text-gray-700">
+                    {{ game.name }}
+                  </label>
+                </div>
               </div>
             </div>
           </div>
