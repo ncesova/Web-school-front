@@ -2,21 +2,24 @@
 import Button from "./ui/Button.vue";
 import {authService} from "../services/auth.service";
 import {computed} from "vue";
-import {useRouter} from "vue-router";
+import {useRouter, useRoute} from "vue-router";
 
 const router = useRouter();
+const route = useRoute();
 const isAuthenticated = computed(() => authService.isAuthenticated());
 
 const handleLogout = () => {
   authService.logout();
   router.push("/login");
 };
+
+const isTeacherCabinet = computed(() => route.path === "/teacher-cabinet");
 </script>
 
 <template>
   <div class="px-5 py-2 border-b">
     <div class="flex items-center justify-between">
-      <RouterLink to="/" v-if="$route.path === '/'">
+      <RouterLink to="/" v-if="$route.path === '/' || isTeacherCabinet">
         <h1 class="tracking-widest text-[30px] font-semibold">CodeCouch</h1>
       </RouterLink>
       <div v-else></div>

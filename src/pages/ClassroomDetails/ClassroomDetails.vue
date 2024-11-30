@@ -8,6 +8,7 @@ import {lessonService} from "../../services/lesson.service";
 import {gradeService} from "../../services/grade.service";
 import {userService} from "../../services/user.service";
 import {gameService, type Game} from "../../services/game.service";
+import BackButton from "../../components/ui/BackButton.vue";
 
 interface ClassroomDetails {
   id: string;
@@ -252,6 +253,7 @@ onMounted(() => {
 <template>
   <div class="min-h-screen bg-gray-50">
     <Header />
+    <BackButton />
 
     <!-- Message notification -->
     <div

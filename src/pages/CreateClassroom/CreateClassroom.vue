@@ -4,6 +4,7 @@ import {useRouter} from "vue-router";
 import {classroomService} from "../../services/classroom.service";
 import Button from "../../components/ui/Button.vue";
 import BackButton from "../../components/ui/BackButton.vue";
+import Header from "../../components/Header.vue";
 
 const router = useRouter();
 const name = ref("");
@@ -40,6 +41,7 @@ const handleSubmit = async (e: Event) => {
 
 <template>
   <div class="min-h-screen bg-gray-50 relative">
+    <Header />
     <BackButton />
 
     <div class="max-w-2xl mx-auto px-4 py-8">

@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import {useRouter} from "vue-router";
+import {useRouter, useRoute} from "vue-router";
 
 const router = useRouter();
+const route = useRoute();
 
 const goBack = () => {
   router.go(-1);
+};
+
+// Add computed property to check if button should be hidden
+const shouldShowButton = () => {
+  return route.path !== "/teacher-cabinet";
 };
 </script>
 
 <template>
   <button
+    v-if="shouldShowButton()"
     @click="goBack"
     class="absolute top-4 left-4 flex items-center text-gray-600 hover:text-gray-900">
     <svg

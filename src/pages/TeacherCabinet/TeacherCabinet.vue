@@ -7,6 +7,7 @@ import {classroomService} from "../../services/classroom.service";
 import type {User} from "../../types/user";
 import type {Classroom} from "../../types/classroom";
 import Button from "../../components/ui/Button.vue";
+import BackButton from "../../components/ui/BackButton.vue";
 
 const user = ref<User | null>(null);
 const classrooms = ref<Classroom[]>([]);
@@ -88,6 +89,7 @@ const formatDate = (dateString: string) => {
 <template>
   <div class="min-h-screen bg-gray-50">
     <Header />
+    <BackButton />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Loading State -->
