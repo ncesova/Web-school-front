@@ -162,9 +162,6 @@ const formatDate = (dateString: string) => {
                 <h3 class="text-lg font-medium text-gray-900">
                   {{ classroom.name }}
                 </h3>
-                <p class="text-sm text-gray-500">
-                  Создан: {{ formatDate(classroom.createdAt) }}
-                </p>
               </div>
               <div class="flex gap-2">
                 <RouterLink :to="`/classroom/${classroom.id}`">
