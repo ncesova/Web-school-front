@@ -1,12 +1,17 @@
 <template>
   <div class="game-container">
-    <h1>Программирование с питомцем</h1>
-    <p>{{ missionDescription }}</p>
+    <h1 class="text-xl font-semibold">Программирование с питомцем</h1>
+    <pre>{{ missionDescription }}</pre>
+
+    <!-- Кнопка для прослушивания аудио -->
+    <button @click="playAudio" :disabled="loading">
+      Прослушать описание задачи
+    </button>
+
     <div class="w-[50vw] h-[60vh] overflow-hidden relative flex items-center justify-center mx-auto border-2 border-main-green rounded-lg my-3">
-      <div :style="petStyle" class="pet" >
+      <div :style="petStyle" class="pet">
         <img src="./frog.svg" />
       </div>
-  
     </div>
     
     <input v-model="userCommand" @keyup.enter="executeCommand" placeholder="Введите команду для питомца..." />
@@ -18,13 +23,19 @@
     <div v-if="outputMessage" class="output">
       <p>{{ outputMessage }}</p>
     </div>
+
+    <!-- Скрытый аудиофайл -->
+    <audio ref="audio" :src="audioSrc" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const missionDescription = ref('Помоги питомцу выполнить команды! Напиши команду для питомца, чтобы он мог двигаться, прыгать или приседать');
+const missionDescription = ref('Помоги питомцу выполнить команды! Напиши команду для питомца, чтобы он мог двигаться, прыгать или приседать\n\nВот какие команды существуют:\npet.jump() - питомец прыгнет\npet.sitdown() - питомец присядет\npet.left() - питомец двинется влево\npet.right() - питомец двинется вправо');
+
+// Данные для аудио
+const audioSrc = ref('path/to/audio/mission-description.mp3');  // Укажите путь к вашему аудиофайлу
 
 const userCommand = ref('');
 const outputMessage = ref('');
@@ -61,7 +72,7 @@ const executeCommand = () => {
         petStyle.value.bottom = (parseInt(petStyle.value.bottom || '0') + 100) + 'px';
         outputMessage.value = 'Питомец прыгнул!';
         break;
-      case 'pet.seatdown()':
+      case 'pet.sitdown()':
         petStyle.value.bottom = '0px';
         outputMessage.value = 'Питомец сел!';
         break;
@@ -77,6 +88,14 @@ const executeCommand = () => {
     userCommand.value = '';
     loading.value = false;
   }, 1000);
+};
+
+// Функция для проигрывания аудио
+const playAudio = () => {
+  const audio = document.querySelector('audio') as HTMLAudioElement;
+  if (audio) {
+    audio.play();
+  }
 };
 </script>
 
