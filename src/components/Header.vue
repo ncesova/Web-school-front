@@ -16,9 +16,10 @@ const handleLogout = () => {
 <template>
   <div class="px-5 py-2 border-b">
     <div class="flex items-center justify-between">
-      <RouterLink to="/">
+      <RouterLink to="/" v-if="$route.path === '/'">
         <h1 class="tracking-widest text-[30px] font-semibold">CodeCouch</h1>
       </RouterLink>
+      <div v-else></div>
 
       <div v-if="!isAuthenticated">
         <ul class="flex items-center gap-5">

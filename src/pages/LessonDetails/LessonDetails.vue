@@ -60,6 +60,10 @@ const hasSummaryFile = ref(false);
 
 // Add to existing refs
 const availableStudents = ref<ClassroomStudent[]>([]);
+const isEditing = ref(false);
+const editedName = ref("");
+const editedDescription = ref("");
+const editedGameIds = ref<string[]>([]);
 
 const loadLessonData = async () => {
   try {
@@ -240,6 +244,48 @@ const loadClassroomStudents = async () => {
   }
 };
 
+const startEditing = () => {
+  editedName.value = lesson.value?.name || "";
+  editedDescription.value = lesson.value?.description || "";
+  editedGameIds.value = lesson.value?.gameIds || [];
+  isEditing.value = true;
+};
+
+const handleUpdateLesson = async () => {
+  try {
+    if (!lesson.value) return;
+
+    await lessonService.updateLesson(lessonId, {
+      name: editedName.value.trim(),
+      description: editedDescription.value.trim() || undefined,
+      gameIds: editedGameIds.value.length > 0 ? editedGameIds.value : undefined,
+    });
+
+    // Refresh lesson data
+    const updatedLesson = await lessonService.getLessonById(lessonId);
+    lesson.value = updatedLesson;
+
+    // Reset edit mode
+    isEditing.value = false;
+    message.value = {type: "success", text: "Урок успешно обновлен"};
+    setTimeout(() => {
+      message.value = null;
+    }, 3000);
+  } catch (err) {
+    console.error("Failed to update lesson:", err);
+    error.value =
+      err instanceof Error ? err.message : "Failed to update lesson";
+    message.value = {type: "error", text: error.value};
+  }
+};
+
+const cancelEditing = () => {
+  isEditing.value = false;
+  editedName.value = "";
+  editedDescription.value = "";
+  editedGameIds.value = [];
+};
+
 onMounted(() => {
   loadLessonData();
   checkSummaryExists();
@@ -287,12 +333,75 @@ watch(showAddGradeModal, (newValue) => {
         <div class="bg-white rounded-lg shadow p-6 mb-8">
           <div class="flex justify-between items-start mb-6">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                {{ lesson.name }}
-              </h1>
-              <p class="text-gray-600">{{ lesson.description }}</p>
+              <div v-if="!isEditing">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                  {{ lesson.name }}
+                </h1>
+                <p class="text-gray-600">{{ lesson.description }}</p>
+              </div>
+              <div v-else class="space-y-4 w-full max-w-2xl">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Название урока
+                  </label>
+                  <input
+                    v-model="editedName"
+                    type="text"
+                    required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-main-green focus:ring-main-green" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Описание
+                  </label>
+                  <textarea
+                    v-model="editedDescription"
+                    rows="3"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-main-green focus:ring-main-green"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Игры
+                  </label>
+                  <div class="space-y-2">
+                    <div
+                      v-for="game in games"
+                      :key="game.id"
+                      class="flex items-center">
+                      <input
+                        type="checkbox"
+                        :id="game.id"
+                        :value="game.id"
+                        v-model="editedGameIds"
+                        class="h-4 w-4 text-main-green focus:ring-main-green border-gray-300 rounded" />
+                      <label
+                        :for="game.id"
+                        class="ml-3 block text-sm text-gray-700">
+                        {{ game.name }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <Button @click="showAddGradeModal = true"> Добавить оценку </Button>
+            <div class="flex gap-2">
+              <template v-if="!isEditing">
+                <Button @click="startEditing"> Редактировать </Button>
+                <Button @click="showAddGradeModal = true">
+                  Добавить оценку
+                </Button>
+              </template>
+              <template v-else>
+                <Button @click="cancelEditing" class="bg-gray-500">
+                  Отмена
+                </Button>
+                <Button
+                  @click="handleUpdateLesson"
+                  :disabled="!editedName.trim()">
+                  Сохранить
+                </Button>
+              </template>
+            </div>
           </div>
 
           <!-- Games Section -->

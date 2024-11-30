@@ -365,12 +365,32 @@ onMounted(() => {
                     <td
                       v-for="lesson in lessons"
                       :key="lesson.id"
-                      class="px-6 py-4 whitespace-nowrap">
-                      {{
-                        grades[student.id]?.find(
-                          (g) => g.lessonId === lesson.id
-                        )?.grade || "-"
-                      }}
+                      class="px-6 py-4 whitespace-nowrap relative group">
+                      <div class="relative">
+                        <span>
+                          {{
+                            grades[student.id]?.find(
+                              (g) => g.lessonId === lesson.id
+                            )?.grade || "-"
+                          }}
+                        </span>
+                        <!-- Tooltip for grade comment -->
+                        <div
+                          v-if="
+                            grades[student.id]?.find(
+                              (g) => g.lessonId === lesson.id
+                            )?.comment
+                          "
+                          class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-normal min-w-[200px] z-10">
+                          {{
+                            grades[student.id]?.find(
+                              (g) => g.lessonId === lesson.id
+                            )?.comment
+                          }}
+                          <div
+                            class="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 </tbody>

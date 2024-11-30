@@ -7,6 +7,12 @@ export interface CreateLessonRequest {
   gameIds?: string[];
 }
 
+export interface UpdateLessonRequest {
+  name?: string;
+  description?: string;
+  gameIds?: string[];
+}
+
 export interface Lesson {
   id: string;
   name: string;
@@ -164,5 +170,26 @@ export const lessonService = {
     if (!response.ok) {
       throw new Error(`Failed to delete summary: ${response.statusText}`);
     }
+  },
+
+  updateLesson: async (
+    id: string,
+    data: UpdateLessonRequest
+  ): Promise<Lesson> => {
+    const response = await fetch(`${API_URL}/lessons/${id}`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update lesson: ${response.statusText}`);
+    }
+
+    return response.json();
   },
 };
