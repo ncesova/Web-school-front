@@ -26,7 +26,7 @@ export const authService = {
       const data: LoginResponse = await response.json();
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
-      localStorage.setItem("roleId", data.roleId);
+      localStorage.setItem("roleId", data.roleId.toString());
       return data;
     } catch (error) {
       throw error;
@@ -51,7 +51,7 @@ export const authService = {
       const data: SignupResponse = await response.json();
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
-      localStorage.setItem("roleId", data.roleId);
+      localStorage.setItem("roleId", data.roleId.toString());
       return data;
     } catch (error) {
       throw error;

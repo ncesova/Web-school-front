@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import Header from "../../components/Header.vue";
-
+import Search from "../../components/Search.vue";
 import {ref, onMounted} from "vue";
-import Agent from "../../games/Agent/Agent.vue";
-import Pet from "../../games/Pet/Pet.vue";
-import Testing from "../../games/Testing/Testing.vue";
 
 const texts = ref<string[]>(["Frontend", "Backend", "Тестирование", "GameDev"]);
 const displayedText = ref("");
@@ -49,25 +46,61 @@ onMounted(() => {
   typeText();
 });
 </script>
+
 <template>
-  <div class="">
+  <div>
     <Header />
-    <div class="flex items-center justify-center flex-col mt-4">
-      <div>
-        <span class="text-[58px] font-semibold">{{ displayedText }}</span
-        ><span
-          class="cursor text-[58px] font-semibold text-main-green"
-          :class="{blink: cursorVisible}"
-          >|</span
-        >
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Hero Section -->
+      <div class="text-center mb-16">
+        <div class="mb-4">
+          <span class="text-[58px] font-semibold">{{ displayedText }}</span>
+          <span
+            class="cursor text-[58px] font-semibold text-main-green"
+            :class="{blink: cursorVisible}"
+            >|</span
+          >
+        </div>
+        <h1 class="text-[58px] font-semibold">
+          с наставником в формате 1 на 1
+        </h1>
       </div>
 
-      <p class="text-[58px] font-semibold">с наставником в формате 1 на 1</p>
+      <!-- Search Component -->
+      <Search />
+
+      <!-- Popular Tags -->
+      <div class="mt-8 flex flex-wrap justify-center gap-2">
+        <button
+          v-for="tag in [
+            'Python',
+            'Java',
+            'JavaScript',
+            'C#',
+            'C++',
+            'React',
+            'Mobile',
+            'UX/UI',
+            'Data Science',
+            'Team Lead',
+            'Product Management',
+            '1C',
+          ]"
+          :key="tag"
+          class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium text-gray-700 transition-colors">
+          {{ tag }}
+        </button>
+      </div>
     </div>
-    <!-- <Agent /> -->
-    <!-- <Pet /> -->
-    <!-- <Editor /> -->
-    <Testing />
   </div>
 </template>
-<style lang="scss"></style>
+
+<style scoped>
+.bg-main-green {
+  background-color: #4caf50;
+}
+
+.cursor.blink {
+  opacity: 0;
+}
+</style>
