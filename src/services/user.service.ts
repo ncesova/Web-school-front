@@ -1,5 +1,6 @@
 import {User} from "../types/user";
 import {authService} from "./auth.service";
+import {UserRole} from "../types/auth";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -64,5 +65,23 @@ export const userService = {
       console.error("updateUser error:", error);
       throw error;
     }
+  },
+
+  getAllStudents: async (): Promise<User[]> => {
+    const response = await fetch(`${API_URL}/users`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch users: ${response.statusText}`);
+    }
+
+    const users = await response.json();
+    // Filter only students (roleId === 1 for students)
+    return users.filter((user) => user.roleId === UserRole.Student);
   },
 };

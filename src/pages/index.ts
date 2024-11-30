@@ -53,6 +53,11 @@ export const routes = [
     component: CreateClassroom,
     meta: {requiresAuth: true},
   },
+  {
+    path: "/classroom/:id",
+    component: () => import("./ClassroomDetails/ClassroomDetails.vue"),
+    meta: {requiresAuth: true},
+  },
 ];
 
 export {Routing};
