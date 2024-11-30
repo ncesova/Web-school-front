@@ -1,8 +1,8 @@
 export interface Classroom {
   id: string;
   name: string;
-  createdAt: string;
-  updatedAt: string;
+  admins: User[];
+  students: User[];
 }
 
 export interface CreateClassroomRequest {
@@ -11,4 +11,11 @@ export interface CreateClassroomRequest {
 
 export interface AddUsersToClassroomRequest {
   userIds: string[];
+}
+
+interface User {
+  id: string;
+  username: string;
+  name?: string;
+  surname?: string;
 }

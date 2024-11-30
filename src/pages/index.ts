@@ -58,6 +58,11 @@ export const routes = [
     component: () => import("./ClassroomDetails/ClassroomDetails.vue"),
     meta: {requiresAuth: true},
   },
+  {
+    path: "/lessons/:id",
+    component: () => import("./LessonDetails/LessonDetails.vue"),
+    meta: {requiresAuth: true},
+  },
 ];
 
 export {Routing};

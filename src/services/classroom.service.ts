@@ -7,10 +7,6 @@ import type {
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-interface AddUsersToClassroomRequest {
-  userIds: string[];
-}
-
 export const classroomService = {
   async createClassroom(data: CreateClassroomRequest): Promise<Classroom> {
     console.log("Creating classroom:", data);

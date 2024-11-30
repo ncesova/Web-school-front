@@ -82,4 +82,87 @@ export const lessonService = {
       throw new Error(`Failed to delete lesson: ${response.statusText}`);
     }
   },
+
+  uploadSummary: async (
+    lessonId: string,
+    formData: FormData,
+    onProgress?: (progress: number) => void
+  ): Promise<void> => {
+    const xhr = new XMLHttpRequest();
+
+    return new Promise((resolve, reject) => {
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable && onProgress) {
+          const progress = (event.loaded / event.total) * 100;
+          onProgress(progress);
+        }
+      });
+
+      xhr.addEventListener("load", () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed: ${xhr.statusText}`));
+        }
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("Upload failed"));
+      });
+
+      xhr.open("POST", `${API_URL}/lessons/${lessonId}/summary`);
+      xhr.setRequestHeader(
+        "Authorization",
+        `Bearer ${localStorage.getItem("token")}`
+      );
+      xhr.send(formData);
+    });
+  },
+
+  downloadSummary: async (lessonId: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/lessons/${lessonId}/summary`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to download summary: ${response.statusText}`);
+    }
+
+    // Get filename from Content-Disposition header if available
+    const contentDisposition = response.headers.get("Content-Disposition");
+    let filename = `lesson-${lessonId}-summary`;
+    if (contentDisposition) {
+      const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(
+        contentDisposition
+      );
+      if (matches != null && matches[1]) {
+        filename = matches[1].replace(/['"]/g, "");
+      }
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  },
+
+  deleteSummary: async (lessonId: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/lessons/${lessonId}/summary`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete summary: ${response.statusText}`);
+    }
+  },
 };

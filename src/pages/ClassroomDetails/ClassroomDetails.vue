@@ -4,9 +4,10 @@ import {useRoute, useRouter} from "vue-router";
 import Header from "../../components/Header.vue";
 import Button from "../../components/ui/Button.vue";
 import {classroomService} from "../../services/classroom.service";
-import {lessonService} from "../../services/lesson.service.ts";
-import {gradeService} from "../../services/grade.service.ts";
+import {lessonService} from "../../services/lesson.service";
+import {gradeService} from "../../services/grade.service";
 import {userService} from "../../services/user.service";
+import {gameService, type Game} from "../../services/game.service";
 
 interface ClassroomDetails {
   id: string;
@@ -72,6 +73,9 @@ const loadingStudents = ref(false);
 
 const message = ref<Message | null>(null);
 
+const availableGames = ref<Game[]>([]);
+const loadingGames = ref(false);
+
 const loadClassroomData = async () => {
   try {
     loading.value = true;
@@ -104,17 +108,24 @@ const handleAddLesson = async () => {
     if (!newLessonName.value.trim()) return;
 
     await lessonService.createLesson({
-      name: newLessonName.value,
-      description: newLessonDescription.value,
+      name: newLessonName.value.trim(),
+      description: newLessonDescription.value.trim() || undefined,
       classroomId,
-      gameIds: selectedGameIds.value,
+      gameIds:
+        selectedGameIds.value.length > 0 ? selectedGameIds.value : undefined,
     });
 
     // Refresh lessons
     const lessonsData = await lessonService.getClassroomLessons(classroomId);
     lessons.value = lessonsData;
 
-    // Reset form
+    // Show success message
+    message.value = {type: "success", text: "Урок успешно создан"};
+    setTimeout(() => {
+      message.value = null;
+    }, 3000);
+
+    // Reset form and close modal
     newLessonName.value = "";
     newLessonDescription.value = "";
     selectedGameIds.value = [];
@@ -122,6 +133,7 @@ const handleAddLesson = async () => {
   } catch (err) {
     console.error("Failed to add lesson:", err);
     error.value = err instanceof Error ? err.message : "Failed to add lesson";
+    message.value = {type: "error", text: error.value};
   }
 };
 
@@ -207,6 +219,29 @@ const filteredStudents = computed(() => {
       student.name?.toLowerCase().includes(query) ||
       student.surname?.toLowerCase().includes(query)
   );
+});
+
+const loadAvailableGames = async () => {
+  try {
+    loadingGames.value = true;
+    availableGames.value = await gameService.getAllGames();
+  } catch (err) {
+    console.error("Failed to load games:", err);
+    error.value = err instanceof Error ? err.message : "Failed to load games";
+  } finally {
+    loadingGames.value = false;
+  }
+};
+
+watch(showAddLessonModal, (newValue) => {
+  if (newValue) {
+    loadAvailableGames();
+  } else {
+    // Reset form when modal closes
+    newLessonName.value = "";
+    newLessonDescription.value = "";
+    selectedGameIds.value = [];
+  }
 });
 
 onMounted(() => {
@@ -419,10 +454,12 @@ onMounted(() => {
       <!-- Add Lesson Modal -->
       <div
         v-if="showAddLessonModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg max-w-md w-full">
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg max-w-2xl w-full">
           <h2 class="text-xl font-bold mb-4">Добавить урок</h2>
+
           <form @submit.prevent="handleAddLesson" class="space-y-4">
+            <!-- Lesson Name -->
             <div>
               <label class="block text-sm font-medium text-gray-700">
                 Название урока
@@ -433,20 +470,63 @@ onMounted(() => {
                 required
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-main-green focus:ring-main-green" />
             </div>
+
+            <!-- Description -->
             <div>
               <label class="block text-sm font-medium text-gray-700">
                 Описание
               </label>
               <textarea
                 v-model="newLessonDescription"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-main-green focus:ring-main-green">
-              </textarea>
+                rows="3"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-main-green focus:ring-main-green"></textarea>
             </div>
-            <div class="flex justify-end space-x-4">
-              <Button @click="showAddLessonModal = false" class="bg-gray-500">
+
+            <!-- Games Selection -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Выберите игры для урока
+              </label>
+
+              <div v-if="loadingGames" class="text-center py-4">
+                Загрузка списка игр...
+              </div>
+
+              <div v-else class="space-y-2 max-h-48 overflow-y-auto">
+                <div
+                  v-for="game in availableGames"
+                  :key="game.id"
+                  class="flex items-center p-2 hover:bg-gray-50 rounded">
+                  <input
+                    type="checkbox"
+                    :id="game.id"
+                    :value="game.id"
+                    v-model="selectedGameIds"
+                    class="h-4 w-4 text-main-green focus:ring-main-green border-gray-300 rounded" />
+                  <label
+                    :for="game.id"
+                    class="ml-3 block text-sm text-gray-700 cursor-pointer">
+                    {{ game.name }}
+                  </label>
+                </div>
+              </div>
+
+              <p class="mt-2 text-sm text-gray-500">
+                Выбрано игр: {{ selectedGameIds.length }}
+              </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-4 mt-6">
+              <Button
+                type="button"
+                @click="showAddLessonModal = false"
+                class="bg-gray-500">
                 Отмена
               </Button>
-              <Button type="submit"> Создать </Button>
+              <Button type="submit" :disabled="!newLessonName.trim()">
+                Создать урок
+              </Button>
             </div>
           </form>
         </div>
