@@ -1,36 +1,72 @@
 <template>
-  <div id="app">
-    <h1 class="text-xl font-semibold">Роботы-кодеры</h1>
-    <p>Программируйте робота для выполнения миссий!</p>
-    <pre class="my-3 text-center">
+  <div class="min-h-screen bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-xl font-semibold mb-4">Роботы-кодеры</h1>
+
+      <!-- Exercise Description -->
+      <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <pre class="whitespace-pre-wrap text-lg font-medium text-gray-700">
 Напиши программу, которая приведет робота(синий квадрат) в домик (зеленый квадрат)
-       Задай такое число для robot.x и robot.y, чтоб робот оказался в нужной точке</pre
-    >
-    <div class="flex items-end justify-end flex-col px-4">
-      <div class="flex items-center gap-3">
-        <canvas ref="canvas" width="600" height="400" />
-        <div class="controls">
-          <div class="h-[400px] p-4 bg-[#1E1E1E] w-[50vw]">
+Задай такое число для robot.x и robot.y, чтоб робот оказался в нужной точке</pre
+        >
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
+        <!-- Game Section -->
+        <div class="space-y-4">
+          <canvas
+            ref="canvas"
+            width="600"
+            height="400"
+            class="border border-gray-300 w-full" />
+
+          <!-- Code Editor Section -->
+          <div class="h-[400px] bg-[#1E1E1E]">
             <vue-monaco-editor
               v-model:value="code"
               language="javascript"
               theme="vs-dark"
-              :options="MONACO_EDITOR_OPTIONS"
-              @mount="handleMount" />
+              :options="{
+                ...MONACO_EDITOR_OPTIONS,
+                minimap: {enabled: false},
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                readOnly: false,
+                fontSize: 14,
+              }"
+              @mount="handleMount"
+              class="h-full" />
+          </div>
+
+          <Button @click="runCode" v-if="!feedback" class="w-full">
+            Запустить
+          </Button>
+
+          <div v-if="feedback" class="p-4 bg-white rounded-lg shadow">
+            {{ feedback }}
           </div>
         </div>
+
+        <!-- Leaderboard Section -->
+        <div class="h-fit">
+          <Leaderboard :gameId="GAME_ID" :classroomId="lessonId" />
+        </div>
       </div>
-      <Button @click="runCode" class="w-full" v-if="!feedback"
-        >Запустить</Button
-      >
     </div>
-    <div class="feedback" v-if="feedback">{{ feedback }}</div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import {ref, onMounted, shallowRef} from "vue";
+import {useRoute} from "vue-router";
 import Button from "../../components/ui/Button.vue";
+import Leaderboard from "../../components/Leaderboard.vue";
+import {leaderboardService} from "../../services/leaderboard.service";
+
+const route = useRoute();
+const lessonId = route.params.id as string;
+const GAME_ID = "robot"; // Unique identifier for this game
 
 let canvas: HTMLCanvasElement;
 const code = ref("");
@@ -49,8 +85,8 @@ const MONACO_EDITOR_OPTIONS = {
 };
 
 const editorRef = shallowRef();
-//@ts-ignore
-const handleMount = (editor) => (editorRef.value = editor);
+const handleMount = (editor: any) => (editorRef.value = editor);
+
 const draw = () => {
   if (!ctx.value) return;
 
@@ -84,24 +120,49 @@ onMounted(() => {
   draw();
 });
 
-const runCode = () => {
-  feedback.value = null; // сбросить обратную связь
-  try {
-    // Преобразуем введенный код в функцию и выполняем
-    const userCode = new Function(
-      "robot",
-      `
-      ${code.value}
-    `
-    );
+const calculateScore = (moves: number): number => {
+  // Score calculation based on number of moves and accuracy
+  const distance = Math.sqrt(
+    Math.pow(robot.value.x - goal.value.x, 2) +
+      Math.pow(robot.value.y - goal.value.y, 2)
+  );
+  const baseScore = 1000;
+  const movePenalty = moves * 10;
+  const distancePenalty = distance * 0.5;
 
-    // Запуск пользовательского кода
+  return Math.max(0, Math.round(baseScore - movePenalty - distancePenalty));
+};
+
+const runCode = async () => {
+  feedback.value = null;
+  try {
+    const moves = code.value.split("\n").filter((line) => line.trim()).length;
+    const userCode = new Function("robot", code.value);
     userCode(robot.value);
     draw();
 
-    // Проверка на выполнение миссии
     if (robot.value.x === goal.value.x && robot.value.y === goal.value.y) {
-      feedback.value = "Задача выполнена! Робот достиг цели.";
+      const score = calculateScore(moves);
+      feedback.value = `Задача выполнена! Ваш счет: ${score}`;
+
+      // Submit score to leaderboard with authorization token
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/leaderboard`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            gameId: GAME_ID,
+            value: score,
+          }),
+        });
+        console.log("Score submitted successfully");
+      } catch (err) {
+        console.error("Failed to submit score:", err);
+      }
     }
   } catch (error) {
     feedback.value = "Ошибка в коде! Проверьте синтаксис.";
@@ -110,32 +171,12 @@ const runCode = () => {
 </script>
 
 <style scoped>
-#app {
-  text-align: center;
+.bg-main-green {
+  background-color: #4caf50;
 }
 
-canvas {
-  border: 1px solid black;
-  margin-bottom: 20px;
-}
-
-.controls {
-  margin-bottom: 20px;
-}
-
-textarea {
-  width: 80%;
-  height: 100px;
-  font-family: monospace;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-}
-
-.feedback {
-  margin-top: 20px;
-  font-weight: bold;
+:deep(.monaco-editor) {
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 </style>
