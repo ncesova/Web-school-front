@@ -34,7 +34,7 @@ export const gameService = {
 
     const lessonId = window.location.pathname.split("/")[2];
 
-    const gamesWithUrls = games.map((game) => {
+    const gamesWithUrls = games.map((game: Game) => {
       console.log(`Checking game: ${game.name}, URL: ${GAME_URLS[game.name]}`);
       return {
         ...game,

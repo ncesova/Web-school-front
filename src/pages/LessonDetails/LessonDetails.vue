@@ -67,7 +67,7 @@ const loadLessonData = async () => {
 
     // Load lesson details
     const lessonData = await lessonService.getLessonById(lessonId);
-    lesson.value = lessonData as Lesson;
+    lesson.value = lessonData as unknown as Lesson;
 
     // Load classroom students
     await loadClassroomStudents();
@@ -261,42 +261,6 @@ const startEditing = () => {
   loadAvailableGames();
 };
 
-const handleUpdateGames = async () => {
-  try {
-    if (!lesson.value) return;
-
-    await lessonService.updateLesson(lessonId, {
-      gameIds: editedGameIds.value,
-    });
-
-    // Refresh lesson data
-    const updatedLesson = await lessonService.getLessonById(lessonId);
-    lesson.value = updatedLesson;
-
-    // Refresh games data
-    if (updatedLesson.gameIds?.length) {
-      const gamesData = await gameService.getAllGames();
-      games.value = gamesData.filter((game) =>
-        updatedLesson.gameIds?.includes(game.id)
-      );
-    } else {
-      games.value = [];
-    }
-
-    // Reset edit mode
-    isEditing.value = false;
-    message.value = {type: "success", text: "Игры урока обновлены"};
-    setTimeout(() => {
-      message.value = null;
-    }, 3000);
-  } catch (err) {
-    console.error("Failed to update lesson:", err);
-    error.value =
-      err instanceof Error ? err.message : "Failed to update lesson";
-    message.value = {type: "error", text: error.value};
-  }
-};
-
 const cancelEditing = () => {
   isEditing.value = false;
   editedName.value = "";
@@ -317,7 +281,7 @@ const handleUpdateLesson = async () => {
 
     // Refresh lesson data
     const updatedLesson = await lessonService.getLessonById(lessonId);
-    lesson.value = updatedLesson;
+    lesson.value = updatedLesson as unknown as Lesson;
 
     // Refresh games data
     if (updatedLesson.gameIds?.length) {
@@ -416,15 +380,24 @@ watch(showAddGradeModal, (newValue) => {
                     rows="3"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-main-green focus:ring-main-green"></textarea>
                 </div>
+
+                <!-- Games Selection -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Игры
+                    Выберите игры для урока
                   </label>
-                  <div class="space-y-2">
+
+                  <div v-if="loadingGames" class="text-center py-4">
+                    Загрузка списка игр...
+                  </div>
+
+                  <div
+                    v-else
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div
-                      v-for="game in games"
+                      v-for="game in availableGames"
                       :key="game.id"
-                      class="flex items-center">
+                      class="bg-gray-50 p-4 rounded-lg flex items-center">
                       <input
                         type="checkbox"
                         :id="game.id"
@@ -433,7 +406,7 @@ watch(showAddGradeModal, (newValue) => {
                         class="h-4 w-4 text-main-green focus:ring-main-green border-gray-300 rounded" />
                       <label
                         :for="game.id"
-                        class="ml-3 block text-sm text-gray-700">
+                        class="ml-3 block text-sm font-medium text-gray-700">
                         {{ game.name }}
                       </label>
                     </div>
@@ -443,7 +416,7 @@ watch(showAddGradeModal, (newValue) => {
             </div>
             <div class="flex gap-2">
               <template v-if="!isEditing">
-                <Button @click="startEditing"> Редактировать </Button>
+                <Button @click="startEditing">Редактировать</Button>
                 <Button @click="showAddGradeModal = true">
                   Добавить оценку
                 </Button>
@@ -463,25 +436,10 @@ watch(showAddGradeModal, (newValue) => {
 
           <!-- Games Section -->
           <div v-if="games.length || isEditing" class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-semibold">Игры урока</h2>
-              <div>
-                <Button v-if="!isEditing" @click="startEditing">
-                  Редактировать игры
-                </Button>
-                <template v-else>
-                  <Button @click="cancelEditing" class="bg-gray-500 mr-2">
-                    Отмена
-                  </Button>
-                  <Button @click="handleUpdateGames"> Сохранить </Button>
-                </template>
-              </div>
-            </div>
+            <h2 class="text-xl font-semibold mb-4">Игры урока</h2>
 
             <!-- Games List -->
-            <div
-              v-if="!isEditing"
-              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
                 v-for="game in games"
                 :key="game.id"
@@ -496,33 +454,6 @@ watch(showAddGradeModal, (newValue) => {
                 <template v-else>
                   <h3 class="font-medium">{{ game.name }}</h3>
                 </template>
-              </div>
-            </div>
-
-            <!-- Edit Games -->
-            <div v-else>
-              <div v-if="loadingGames" class="text-center py-4">
-                Загрузка списка игр...
-              </div>
-              <div
-                v-else
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div
-                  v-for="game in availableGames"
-                  :key="game.id"
-                  class="bg-gray-50 p-4 rounded-lg flex items-center">
-                  <input
-                    type="checkbox"
-                    :id="game.id"
-                    :value="game.id"
-                    v-model="editedGameIds"
-                    class="h-4 w-4 text-main-green focus:ring-main-green border-gray-300 rounded" />
-                  <label
-                    :for="game.id"
-                    class="ml-3 block text-sm font-medium text-gray-700">
-                    {{ game.name }}
-                  </label>
-                </div>
               </div>
             </div>
           </div>
