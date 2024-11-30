@@ -18,6 +18,7 @@ export const authGuard: NavigationGuard = (to) => {
     "/signup",
     "/signup-teacher",
   ];
+  const teacherOnlyPages = ["/classroom/create", "/teacher-cabinet"];
 
   const isAuthenticated = authService.isAuthenticated();
   const userRole = authService.getUserRole();
@@ -31,6 +32,10 @@ export const authGuard: NavigationGuard = (to) => {
 
   if (!isAuthenticated) {
     return "/login";
+  }
+
+  if (teacherOnlyPages.includes(to.path) && userRole !== UserRole.Teacher) {
+    return "/cabinet";
   }
 
   if (to.path === "/cabinet" && userRole === UserRole.Teacher) {
