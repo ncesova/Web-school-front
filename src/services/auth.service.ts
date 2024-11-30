@@ -52,4 +52,10 @@ export const authService = {
   getToken() {
     return localStorage.getItem("token");
   },
+
+  isAuthenticated(): boolean {
+    // Check if user has valid token or auth state
+    const token = localStorage.getItem("token");
+    return !!token;
+  },
 };
