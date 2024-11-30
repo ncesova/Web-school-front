@@ -1,4 +1,6 @@
-import axios, { AxiosRequestConfig, ResponseType } from "axios";
+import axios, {AxiosRequestConfig, ResponseType} from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 interface Client {
   data?: unknown | undefined;
@@ -17,7 +19,7 @@ interface Client {
 const REQUEST_TIMEOUT = 5000;
 
 const API = axios.create({
-  baseURL: "https://osago.web-gen.ru:444/api",
+  baseURL: API_URL,
   timeout: REQUEST_TIMEOUT,
   headers: {
     Accept: "application/json",
@@ -42,17 +44,17 @@ export const ApiClient = async ({
     responseType,
   };
 
-  API.defaults.headers = { ...API.defaults.headers, ...headers };
+  API.defaults.headers = {...API.defaults.headers, ...headers};
 
   return API(requestParams)
-    .then((res) => ({ data: res.data, status: res.status }))
+    .then((res: axios.AxiosResponse) => ({data: res.data, status: res.status}))
     .catch((err) => {
       console.error(
         "\nERROR MESSAGE:",
         err.response.data.message,
-        `\nSTATUS: ${err.response.data.status}`,
+        `\nSTATUS: ${err.response.data.status}`
       );
 
-      return { data: "isError", status: err.response.status };
+      return {data: "isError", status: err.response.status};
     });
 };

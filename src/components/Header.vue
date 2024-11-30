@@ -1,5 +1,5 @@
-<script setup lang='ts'>
-import Button from './ui/Button.vue'
+<script setup lang="ts">
+import Button from "./ui/Button.vue";
 </script>
 <template>
   <div class="px-5 py-2 border-b">
@@ -10,7 +10,9 @@ import Button from './ui/Button.vue'
       <div>
         <ul class="flex items-center gap-5">
           <li class="cursor-pointer">Стать наставником</li>
-          <li class="cursor-pointer">Вход для ученика</li>
+          <RouterLink to="/login">
+            <li class="cursor-pointer">Вход для родителя</li>
+          </RouterLink>
           <li class="cursor-pointer">Вход для ментора</li>
           <li><Button>Подобрать ментора</Button></li>
         </ul>
