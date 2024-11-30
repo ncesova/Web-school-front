@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "description": "Напишите функцию для проверки, которая возвращает true, если сумма двух чисел правильная.",
+    "functionTemplate": "function add(a, b) {\n  return a + b;\n}\n\nfunction checkAdd(a, b, expected) {\n  // Напишите ваш код здесь\n}",
+    "testCases": [
+      { "input": [2, 3, 5], "expected": true },
+      { "input": [-2, 3, 1], "expected": true },
+      { "input": [0, 0, 0], "expected": true }
+    ]
+  },
+  {
+    "id": 2,
+    "description": "Напишите функцию для проверки, которая возвращает true, если число четное.",
+    "functionTemplate": "function isEven(num) {\n  return num % 2 === 0;\n}\n\nfunction checkIsEven(num, expected) {\n  // Напишите ваш код здесь\n}",
+    "testCases": [
+      { "input": [4, true], "expected": true },
+      { "input": [5, false], "expected": true },
+      { "input": [0, true], "expected": true }
+    ]
+  }
+]
