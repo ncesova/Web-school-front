@@ -1,4 +1,4 @@
-import type {LoginRequest, LoginResponse} from "../types/auth";
+import type {LoginRequest, LoginResponse, SignupRequest} from "../types/auth";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -21,6 +21,25 @@ export const authService = {
       // Store the token in localStorage
       localStorage.setItem("token", data.token);
       return data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async signup(userData: SignupRequest): Promise<void> {
+    try {
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Registration failed");
+      }
     } catch (error) {
       throw error;
     }

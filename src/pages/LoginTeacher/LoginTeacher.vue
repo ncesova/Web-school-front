@@ -46,11 +46,10 @@ const handleSubmit = async (e: Event) => {
     <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Вход
+          Вход для наставника
         </h2>
       </div>
 
-      <!-- Show error message if exists -->
       <div
         v-if="error"
         class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
@@ -104,7 +103,7 @@ const handleSubmit = async (e: Event) => {
 
       <div class="text-center mt-4">
         <RouterLink
-          to="/signup"
+          to="/signup-teacher"
           class="text-sm text-main-green hover:text-main-green/90">
           Нет аккаунта? Зарегистрироваться
         </RouterLink>

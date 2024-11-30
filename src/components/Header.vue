@@ -9,11 +9,15 @@ import Button from "./ui/Button.vue";
       </RouterLink>
       <div>
         <ul class="flex items-center gap-5">
-          <li class="cursor-pointer">Стать наставником</li>
+          <RouterLink to="/signup-teacher">
+            <li class="cursor-pointer">Стать наставником</li>
+          </RouterLink>
           <RouterLink to="/login">
             <li class="cursor-pointer">Вход для родителя</li>
           </RouterLink>
-          <li class="cursor-pointer">Вход для ментора</li>
+          <RouterLink to="/login-teacher">
+            <li class="cursor-pointer">Вход для ментора</li>
+          </RouterLink>
           <li><Button>Подобрать ментора</Button></li>
         </ul>
       </div>
