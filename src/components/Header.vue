@@ -3,12 +3,10 @@ import Button from "./ui/Button.vue";
 import {authService} from "../services/auth.service";
 import {computed} from "vue";
 import {useRouter, useRoute} from "vue-router";
-import {UserRole} from "../types/auth";
 
 const router = useRouter();
 const route = useRoute();
 const isAuthenticated = computed(() => authService.isAuthenticated());
-const userRole = computed(() => authService.getUserRole());
 
 const handleLogout = () => {
   authService.logout();
@@ -28,16 +26,12 @@ const isTeacherCabinet = computed(() => route.path === "/teacher-cabinet");
 
       <div v-if="!isAuthenticated">
         <ul class="flex items-center gap-5">
-          <RouterLink to="/signup-teacher">
-            <li class="cursor-pointer">Стать наставником</li>
-          </RouterLink>
           <RouterLink to="/login">
-            <li class="cursor-pointer">Вход для родителя</li>
+            <li class="cursor-pointer">Вход</li>
           </RouterLink>
           <RouterLink to="/login-teacher">
             <li class="cursor-pointer">Вход для ментора</li>
           </RouterLink>
-          <li><Button>Подобрать ментора</Button></li>
         </ul>
       </div>
 

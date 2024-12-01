@@ -3,6 +3,7 @@ export interface Classroom {
   name: string;
   admins: User[];
   students: User[];
+  lessons?: {id: string}[];
 }
 
 export interface CreateClassroomRequest {

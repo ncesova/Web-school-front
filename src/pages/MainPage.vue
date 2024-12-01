@@ -130,8 +130,7 @@ const loadSkills = async () => {
   try {
     loading.value = true;
     const tags = await tagService.getAllTags();
-    // Extract only the name from each tag object
-    availableSkills.value = tags.map((tag) => tag.name);
+    availableSkills.value = tags.map((tag: {name: string}) => tag.name);
     console.log("Loaded skills:", availableSkills.value);
   } catch (err) {
     console.error("Failed to load skills:", err);
