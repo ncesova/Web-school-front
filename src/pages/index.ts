@@ -2,6 +2,7 @@ import Routing from "./index.vue";
 import TeacherCabinet from "./TeacherCabinet";
 import ParentCabinet from "./ParentCabinet/ParentCabinet.vue";
 import CreateClassroom from "./CreateClassroom/CreateClassroom.vue";
+import MainPage from "./MainPage.vue";
 
 export const routes = [
   {
@@ -30,7 +31,7 @@ export const routes = [
   },
   {
     path: "/",
-    component: () => import("./MainPage"),
+    component: MainPage,
     name: "Main",
     meta: {requiresAuth: false},
   },
