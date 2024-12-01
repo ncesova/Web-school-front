@@ -3,6 +3,7 @@ import TeacherCabinet from "./TeacherCabinet";
 import ParentCabinet from "./ParentCabinet/ParentCabinet.vue";
 import CreateClassroom from "./CreateClassroom/CreateClassroom.vue";
 import MainPage from "./MainPage.vue";
+import SearchTeachers from "./SearchTeachers/SearchTeachers.vue";
 
 export const routes = [
   {
@@ -104,6 +105,12 @@ export const routes = [
     path: "/lesson/:id/testing",
     component: () => import("../games/Testing/Testing.vue"),
     meta: {requiresAuth: true},
+  },
+  {
+    path: "/search",
+    component: SearchTeachers,
+    name: "SearchTeachers",
+    meta: {requiresAuth: false},
   },
 ];
 

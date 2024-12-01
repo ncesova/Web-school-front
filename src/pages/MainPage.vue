@@ -20,27 +20,37 @@
             <div class="flex flex-col sm:flex-row gap-4">
               <select
                 v-model="selectedSkill"
+                :disabled="loading"
                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-main-green">
                 <option value="">Выбери что хочешь изучать</option>
-                <option value="python">Python</option>
-                <option value="javascript">JavaScript</option>
-                <option value="web">Web-разработка</option>
-                <option value="games">Создание игр</option>
-                <option value="algorithms">Алгоритмы</option>
+                <option
+                  v-for="skill in availableSkills"
+                  :key="skill"
+                  :value="skill">
+                  {{ skill }}
+                </option>
               </select>
-              <Button @click="findMentor" class="w-full sm:w-auto">
-                Начать обучение
+              <Button
+                @click="findMentor"
+                :disabled="loading || !selectedSkill"
+                class="w-full sm:w-auto">
+                {{ loading ? "Загрузка..." : "Начать обучение" }}
               </Button>
             </div>
+            <!-- Error message -->
+            <p v-if="error" class="mt-2 text-red-600 text-sm">
+              {{ error }}
+            </p>
           </div>
 
           <!-- Popular Tags -->
           <div class="flex flex-wrap justify-center gap-2 mb-12">
             <span
-              v-for="tag in popularTags"
-              :key="tag"
-              class="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700">
-              {{ tag }}
+              v-for="skill in availableSkills.slice(0, 6)"
+              :key="skill"
+              class="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 cursor-pointer hover:bg-gray-200"
+              @click="selectedSkill = skill">
+              {{ skill }}
             </span>
           </div>
         </div>
@@ -102,62 +112,44 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from "vue";
+import {ref, onMounted} from "vue";
 import {useRouter} from "vue-router";
 import Header from "../components/Header.vue";
 import Button from "../components/ui/Button.vue";
+import {tagService} from "../services/tag.service";
 
 const router = useRouter();
 const selectedSkill = ref("");
+const loading = ref(false);
+const error = ref("");
 
-const popularTags = [
-  "Python для начинающих",
-  "Создание игр",
-  "Web-разработка",
-  "JavaScript",
-  "Алгоритмы",
-  "HTML/CSS",
-];
+const availableSkills = ref<string[]>([]);
 
-const mentors = [
-  {
-    id: 1,
-    name: "Александр Петров",
-    role: "Senior Software Engineer в EPAM",
-    description:
-      "Учу программированию на Python и созданию игр. 5 лет опыта преподавания.",
-    image: "/images/mentor1.jpg",
-  },
-  {
-    id: 2,
-    name: "Мария Иванова",
-    role: "Frontend Developer в Yandex",
-    description: "Специализируюсь на JavaScript и современной веб-разработке.",
-    image: "/images/mentor2.jpg",
-  },
-  {
-    id: 3,
-    name: "Дмитрий Сидоров",
-    role: "Game Developer",
-    description:
-      "Создаю игры и обучаю основам геймдева. Работаю с Unity и Python.",
-    image: "/images/mentor3.jpg",
-  },
-  {
-    id: 4,
-    name: "Анна Козлова",
-    role: "Software Engineer в Google",
-    description:
-      "Преподаю алгоритмы и структуры данных. Помогаю с олимпиадным программированием.",
-    image: "/images/mentor4.jpg",
-  },
-];
+// Load tags from server
+const loadSkills = async () => {
+  try {
+    loading.value = true;
+    const tags = await tagService.getAllTags();
+    // Extract only the name from each tag object
+    availableSkills.value = tags.map((tag) => tag.name);
+    console.log("Loaded skills:", availableSkills.value);
+  } catch (err) {
+    console.error("Failed to load skills:", err);
+    error.value = "Failed to load available skills";
+  } finally {
+    loading.value = false;
+  }
+};
 
 const findMentor = () => {
   if (selectedSkill.value) {
     router.push(`/search?skill=${selectedSkill.value}`);
   }
 };
+
+onMounted(() => {
+  loadSkills();
+});
 </script>
 
 <style scoped>
