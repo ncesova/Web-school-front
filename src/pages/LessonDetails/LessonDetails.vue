@@ -603,8 +603,8 @@ watch(showAddGradeModal, (newValue) => {
                 v-model.number="gradeValue"
                 type="number"
                 required
-                min="0"
-                max="100"
+                min="1"
+                max="5"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-main-green focus:ring-main-green" />
             </div>
 

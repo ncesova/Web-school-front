@@ -3,11 +3,32 @@ import Header from "../../components/Header.vue";
 import {ref, onMounted} from "vue";
 import {userService} from "../../services/user.service";
 import {authService} from "../../services/auth.service";
+import {classroomService} from "../../services/classroom.service";
+import {gradeService} from "../../services/grade.service";
 import type {User} from "../../types/user";
 import Button from "../../components/ui/Button.vue";
 
+interface ChildStats {
+  totalLessons: number;
+  completedLessons: number;
+  averageGrade: number;
+}
+
+interface ChildWithStats extends User {
+  classrooms?: {
+    id: string;
+    name: string;
+    lessons: {
+      id: string;
+      name: string;
+      description?: string;
+    }[];
+  }[];
+  stats?: ChildStats;
+}
+
 const user = ref<User | null>(null);
-const children = ref<User[]>([]);
+const children = ref<ChildWithStats[]>([]);
 const loading = ref(true);
 const error = ref("");
 
@@ -38,11 +59,55 @@ const loadData = async () => {
     console.log("Parent data:", userData);
     user.value = userData;
 
-    // Load children data
+    // Load children data with their classrooms and stats
     console.log("Fetching children data...");
     const childrenData = await userService.getParentChildren();
     console.log("Children data:", childrenData);
-    children.value = childrenData;
+
+    // Load classroom data and stats for each child
+    const childrenWithDetails = await Promise.all(
+      childrenData.map(async (child) => {
+        try {
+          const [classrooms, grades] = await Promise.all([
+            classroomService.getStudentClassrooms(child.id),
+            gradeService.getStudentGrades(child.id),
+          ]);
+
+          const totalLessons = classrooms.reduce(
+            (total, c) => total + c.lessons.length,
+            0
+          );
+          const completedLessons = grades.length;
+          const averageGrade = grades.length
+            ? grades.reduce((sum, g) => sum + g.grade, 0) / grades.length
+            : 0;
+
+          return {
+            ...child,
+            classrooms,
+            stats: {
+              totalLessons,
+              completedLessons,
+              averageGrade: Number(averageGrade.toFixed(1)),
+            },
+          };
+        } catch (err) {
+          console.error(`Failed to load details for child ${child.id}:`, err);
+          return {
+            ...child,
+            classrooms: [],
+            stats: {
+              totalLessons: 0,
+              completedLessons: 0,
+              averageGrade: 0,
+            },
+          };
+        }
+      })
+    );
+
+    children.value = childrenWithDetails;
+    console.log("Children with details:", children.value);
   } catch (err) {
     console.error("Failed to load parent cabinet data:", err);
     error.value = err instanceof Error ? err.message : "Failed to load data";
@@ -137,18 +202,71 @@ onMounted(() => {
             У вас пока нет добавленных детей
           </div>
 
-          <div v-else class="grid grid-cols-1 gap-6">
+          <div v-else class="space-y-8">
             <div
               v-for="child in children"
               :key="child.id"
               class="bg-gray-50 p-6 rounded-lg">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="text-xl font-bold text-gray-900">
-                    {{ child.name }} {{ child.surname }}
-                  </h3>
-                  <p class="text-gray-600">{{ child.username }}</p>
+              <div class="mb-4">
+                <h3 class="text-xl font-bold text-gray-900">
+                  {{ child.name }} {{ child.surname }}
+                </h3>
+                <p class="text-gray-600">{{ child.username }}</p>
+              </div>
+
+              <!-- Child's Stats -->
+              <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                  <h4 class="text-sm font-medium text-gray-500">Прогресс</h4>
+                  <p class="text-2xl font-bold text-main-green">
+                    {{
+                      Math.round(
+                        ((child.stats?.completedLessons || 0) /
+                          (child.stats?.totalLessons || 1)) *
+                          100
+                      )
+                    }}%
+                  </p>
                 </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                  <h4 class="text-sm font-medium text-gray-500">
+                    Выполнено уроков
+                  </h4>
+                  <p class="text-2xl font-bold text-main-green">
+                    {{ child.stats?.completedLessons || 0 }}/{{
+                      child.stats?.totalLessons || 0
+                    }}
+                  </p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                  <h4 class="text-sm font-medium text-gray-500">
+                    Средняя оценка
+                  </h4>
+                  <p class="text-2xl font-bold text-main-green">
+                    {{ child.stats?.averageGrade || 0 }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Child's Classrooms -->
+              <div v-if="child.classrooms?.length" class="space-y-4">
+                <h4 class="font-medium text-gray-900">Классы</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div
+                    v-for="classroom in child.classrooms"
+                    :key="classroom.id"
+                    class="bg-white p-4 rounded-lg shadow-sm">
+                    <h5 class="font-medium text-gray-900 mb-2">
+                      {{ classroom.name }}
+                    </h5>
+                    <p class="text-sm text-gray-600">
+                      Уроков: {{ classroom.lessons.length }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-gray-500 italic">
+                Не записан ни в один класс
               </div>
             </div>
           </div>

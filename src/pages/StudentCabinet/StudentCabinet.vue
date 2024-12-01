@@ -44,6 +44,15 @@ const averageGrade = computed(() => {
   return Number((sum / grades.value.length).toFixed(1));
 });
 
+const completedLessons = computed(() => {
+  return grades.value.length;
+});
+
+const progressPercentage = computed(() => {
+  if (totalLessons.value === 0) return 0;
+  return Math.round((completedLessons.value / totalLessons.value) * 100);
+});
+
 const loadStudentData = async () => {
   try {
     const userId = authService.getUserId();
@@ -130,6 +139,33 @@ onMounted(() => {
               <h3 class="text-lg font-medium text-gray-900">Всего уроков</h3>
               <p class="text-2xl font-bold text-main-green">
                 {{ totalLessons }}
+              </p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-lg font-medium text-gray-900">Средняя оценка</h3>
+              <p class="text-2xl font-bold text-main-green">
+                {{ averageGrade }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6">Мой прогресс</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-lg font-medium text-gray-900">
+                Выполнено уроков
+              </h3>
+              <p class="text-2xl font-bold text-main-green">
+                {{ completedLessons }}/{{ totalLessons }}
+              </p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-lg font-medium text-gray-900">Прогресс</h3>
+              <p class="text-2xl font-bold text-main-green">
+                {{ progressPercentage }}%
               </p>
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">

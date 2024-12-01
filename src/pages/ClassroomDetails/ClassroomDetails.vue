@@ -50,6 +50,21 @@ interface Message {
   text: string;
 }
 
+interface StudentDetails {
+  id: string;
+  username: string;
+  name?: string;
+  surname?: string;
+  grades?: {
+    lessonId: string;
+    grade: number;
+    comment?: string;
+  }[];
+  averageGrade?: number;
+  completedLessons?: number;
+  totalLessons?: number;
+}
+
 const route = useRoute();
 const classroomId = route.params.id as string;
 
@@ -62,6 +77,7 @@ const error = ref("");
 // Modal states
 const showAddStudentModal = ref(false);
 const showAddLessonModal = ref(false);
+const showStudentDetailsModal = ref(false);
 
 // Form states
 const newLessonName = ref("");
@@ -76,6 +92,8 @@ const message = ref<Message | null>(null);
 
 const availableGames = ref<Game[]>([]);
 const loadingGames = ref(false);
+
+const selectedStudent = ref<StudentDetails | null>(null);
 
 const loadClassroomData = async () => {
   try {
@@ -245,6 +263,35 @@ watch(showAddLessonModal, (newValue) => {
   }
 });
 
+const handleStudentClick = async (student: User) => {
+  try {
+    // Get student's grades
+    const studentGrades = grades.value[student.id] || [];
+
+    // Calculate stats
+    const avgGrade = studentGrades.length
+      ? studentGrades.reduce((sum, g) => sum + g.grade, 0) /
+        studentGrades.length
+      : 0;
+
+    const completedLessons = studentGrades.length;
+    const totalLessons = lessons.value.length;
+
+    selectedStudent.value = {
+      ...student,
+      grades: studentGrades,
+      averageGrade: Number(avgGrade.toFixed(1)),
+      completedLessons,
+      totalLessons,
+    };
+
+    showStudentDetailsModal.value = true;
+  } catch (err) {
+    console.error("Failed to load student details:", err);
+    error.value = "Failed to load student details";
+  }
+};
+
 onMounted(() => {
   loadClassroomData();
 });
@@ -301,7 +348,8 @@ onMounted(() => {
               <div
                 v-for="student in classroom.students"
                 :key="student.id"
-                class="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                class="bg-gray-50 p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-100"
+                @click="handleStudentClick(student)">
                 <div>
                   <p class="font-medium">
                     {{ student.name }} {{ student.surname }}
@@ -309,7 +357,7 @@ onMounted(() => {
                   <p class="text-sm text-gray-600">{{ student.username }}</p>
                 </div>
                 <button
-                  @click="handleRemoveStudent(student.id)"
+                  @click.stop="handleRemoveStudent(student.id)"
                   class="text-red-600 hover:text-red-800">
                   Удалить
                 </button>
@@ -551,6 +599,110 @@ onMounted(() => {
               </Button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- Student Details Modal -->
+      <div
+        v-if="showStudentDetailsModal && selectedStudent"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div
+          class="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900">
+                {{ selectedStudent.name }} {{ selectedStudent.surname }}
+              </h2>
+              <p class="text-gray-600">{{ selectedStudent.username }}</p>
+            </div>
+            <button
+              @click="showStudentDetailsModal = false"
+              class="text-gray-500 hover:text-gray-700">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Student Stats -->
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-sm font-medium text-gray-500">Средняя оценка</h3>
+              <p class="text-2xl font-bold text-main-green">
+                {{ selectedStudent.averageGrade }}
+              </p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-sm font-medium text-gray-500">
+                Выполнено уроков
+              </h3>
+              <p class="text-2xl font-bold text-main-green">
+                {{ selectedStudent.completedLessons }}/{{
+                  selectedStudent.totalLessons
+                }}
+              </p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="text-sm font-medium text-gray-500">Прогресс</h3>
+              <p class="text-2xl font-bold text-main-green">
+                {{
+                  Math.round(
+                    (selectedStudent.completedLessons ||
+                      1 / (selectedStudent.totalLessons || 1)) * 100
+                  )
+                }}%
+              </p>
+            </div>
+          </div>
+
+          <!-- Grades Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Урок
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Оценка
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Комментарий
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="lesson in lessons" :key="lesson.id">
+                  <td class="px-6 py-4 whitespace-nowrap">{{ lesson.name }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {{
+                      selectedStudent.grades?.find(
+                        (g) => g.lessonId === lesson.id
+                      )?.grade || "-"
+                    }}
+                  </td>
+                  <td class="px-6 py-4">
+                    {{
+                      selectedStudent.grades?.find(
+                        (g) => g.lessonId === lesson.id
+                      )?.comment || "-"
+                    }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
