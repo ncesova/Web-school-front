@@ -111,7 +111,7 @@ watch(
     <Header />
     <BackButton />
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-8">
         <p>Loading...</p>
@@ -125,9 +125,11 @@ watch(
       <!-- Content -->
       <template v-else>
         <!-- Welcome Section -->
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
-          <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-8">
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+            <h1
+              class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
               Добро пожаловать, {{ getDisplayName() }}!
             </h1>
             <RouterLink to="/profile/edit">
@@ -136,7 +138,7 @@ watch(
           </div>
 
           <!-- Stats Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-gray-50 p-4 rounded-lg">
               <h3 class="text-lg font-medium text-gray-900">Всего учеников</h3>
               <p class="text-2xl font-bold text-main-green">
@@ -161,9 +163,13 @@ watch(
         </div>
 
         <!-- Classrooms Section -->
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Мои классы</h2>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+            <h2
+              class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-0">
+              Мои классы
+            </h2>
             <RouterLink to="/classroom/create">
               <Button>Создать класс</Button>
             </RouterLink>
@@ -177,54 +183,37 @@ watch(
             </div>
 
             <div
-              v-for="classroom in classrooms"
-              :key="classroom.id"
-              class="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900">
-                  {{ classroom.name }}
-                </h3>
-              </div>
-              <div class="flex gap-2">
-                <RouterLink :to="`/classroom/${classroom.id}`">
-                  <Button>Открыть</Button>
-                </RouterLink>
-                <Button
-                  @click="handleDeleteClassroom(classroom.id)"
-                  class="bg-red-500 hover:bg-red-600">
-                  Удалить
-                </Button>
+              v-else
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div
+                v-for="classroom in classrooms"
+                :key="classroom.id"
+                class="bg-gray-50 p-4 rounded-lg">
+                <div class="flex flex-col h-full">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">
+                      {{ classroom.name }}
+                    </h3>
+                    <div class="space-y-2 text-sm text-gray-600">
+                      <p>Учеников: {{ classroom.students?.length || 0 }}</p>
+                      <p>Уроков: {{ classroom.lessons?.length || 0 }}</p>
+                    </div>
+                  </div>
+                  <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                    <RouterLink
+                      :to="`/classroom/${classroom.id}`"
+                      class="flex-1">
+                      <Button class="w-full">Подробнее</Button>
+                    </RouterLink>
+                    <Button
+                      @click="handleDeleteClassroom(classroom.id)"
+                      class="bg-red-500 hover:bg-red-600 w-full sm:w-auto">
+                      Удалить
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
-            Быстрые действия
-          </h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <RouterLink
-              to="/classroom/create"
-              class="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
-              <h3 class="text-lg font-medium text-gray-900">Создать класс</h3>
-              <p class="text-gray-600">Создайте новый класс для учеников</p>
-            </RouterLink>
-
-            <RouterLink
-              to="/lessons/create"
-              class="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
-              <h3 class="text-lg font-medium text-gray-900">Создать урок</h3>
-              <p class="text-gray-600">Добавьте новый урок для класса</p>
-            </RouterLink>
-
-            <RouterLink
-              to="/grades"
-              class="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
-              <h3 class="text-lg font-medium text-gray-900">Оценки</h3>
-              <p class="text-gray-600">Просмотр и управление оценками</p>
-            </RouterLink>
           </div>
         </div>
       </template>

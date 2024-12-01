@@ -347,7 +347,7 @@ watch(showAddGradeModal, (newValue) => {
       {{ message.text }}
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-8">
         <p>Loading...</p>
@@ -360,11 +360,13 @@ watch(showAddGradeModal, (newValue) => {
 
       <!-- Content -->
       <template v-else-if="lesson">
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
-          <div class="flex justify-between items-start mb-6">
-            <div>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-8">
+          <!-- Header Section -->
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+            <div class="w-full sm:w-auto">
               <div v-if="!isEditing">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                   {{ lesson.name }}
                 </h1>
                 <p class="text-gray-600">{{ lesson.description }}</p>
@@ -423,20 +425,27 @@ watch(showAddGradeModal, (newValue) => {
                 </div>
               </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <template v-if="!isStudent && !isEditing">
-                <Button @click="startEditing">Редактировать</Button>
-                <Button @click="showAddGradeModal = true">
+                <Button @click="startEditing" class="w-full sm:w-auto"
+                  >Редактировать</Button
+                >
+                <Button
+                  @click="showAddGradeModal = true"
+                  class="w-full sm:w-auto">
                   Добавить оценку
                 </Button>
               </template>
               <template v-if="!isStudent && isEditing">
-                <Button @click="cancelEditing" class="bg-gray-500">
+                <Button
+                  @click="cancelEditing"
+                  class="bg-gray-500 w-full sm:w-auto">
                   Отмена
                 </Button>
                 <Button
                   @click="handleUpdateLesson"
-                  :disabled="!editedName.trim()">
+                  :disabled="!editedName.trim()"
+                  class="w-full sm:w-auto">
                   Сохранить
                 </Button>
               </template>
@@ -446,9 +455,7 @@ watch(showAddGradeModal, (newValue) => {
           <!-- Games Section -->
           <div v-if="games.length || isEditing" class="mb-8">
             <h2 class="text-xl font-semibold mb-4">Игры урока</h2>
-
-            <!-- Games List -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
                 v-for="game in games"
                 :key="game.id"
@@ -471,24 +478,24 @@ watch(showAddGradeModal, (newValue) => {
           <div class="mb-8">
             <h2 class="text-xl font-semibold mb-4">Материалы урока</h2>
             <div class="space-y-4">
-              <div class="flex items-center gap-4">
+              <div class="flex flex-col sm:flex-row items-center gap-4">
                 <input
                   ref="fileInputRef"
                   type="file"
                   @change="handleFileUpload"
                   accept=".pdf,.doc,.docx,.txt"
                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-main-green file:text-white hover:file:bg-main-green/90" />
-                <div class="flex gap-2">
+                <div class="flex gap-2 w-full sm:w-auto">
                   <Button
                     v-if="hasSummaryFile"
                     @click="handleDownloadSummary"
-                    class="whitespace-nowrap">
+                    class="whitespace-nowrap w-full sm:w-auto">
                     Скачать
                   </Button>
                   <Button
                     v-if="hasSummaryFile"
                     @click="handleDeleteSummary"
-                    class="bg-red-500 hover:bg-red-600 whitespace-nowrap">
+                    class="bg-red-500 hover:bg-red-600 whitespace-nowrap w-full sm:w-auto">
                     Удалить
                   </Button>
                 </div>
@@ -523,45 +530,49 @@ watch(showAddGradeModal, (newValue) => {
           <!-- Grades Section - Only visible for teachers -->
           <div v-if="!isStudent">
             <h2 class="text-xl font-semibold mb-4">Оценки</h2>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Студент
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Оценка
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Комментарий
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="grade in grades" :key="grade.studentId">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{
-                        availableStudents.find((s) => s.id === grade.studentId)
-                          ?.name || grade.studentId
-                      }}
-                      {{
-                        availableStudents.find((s) => s.id === grade.studentId)
-                          ?.surname
-                      }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ grade.grade }}
-                    </td>
-                    <td class="px-6 py-4">
-                      {{ grade.comment || "-" }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="overflow-x-auto -mx-4 sm:mx-0">
+              <div class="inline-block min-w-full align-middle">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Студент
+                      </th>
+                      <th
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Оценка
+                      </th>
+                      <th
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Комментарий
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="grade in grades" :key="grade.studentId">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{
+                          availableStudents.find(
+                            (s) => s.id === grade.studentId
+                          )?.name || grade.studentId
+                        }}
+                        {{
+                          availableStudents.find(
+                            (s) => s.id === grade.studentId
+                          )?.surname
+                        }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ grade.grade }}
+                      </td>
+                      <td class="px-6 py-4">
+                        {{ grade.comment || "-" }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

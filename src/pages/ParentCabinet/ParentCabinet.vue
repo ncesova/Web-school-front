@@ -161,7 +161,7 @@ onMounted(() => {
   <div class="min-h-screen bg-gray-50">
     <Header />
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-8">
         <p>Loading...</p>
@@ -183,9 +183,11 @@ onMounted(() => {
       <!-- Content -->
       <template v-else>
         <!-- Welcome Section -->
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
-          <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-8">
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+            <h1
+              class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
               Личный кабинет родителя
             </h1>
             <Button @click="showAddChildModal = true">
@@ -195,30 +197,32 @@ onMounted(() => {
         </div>
 
         <!-- Children Section -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">Мои дети</h2>
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
+            Мои дети
+          </h2>
 
           <div v-if="children.length === 0" class="text-center text-gray-500">
             У вас пока нет добавленных детей
           </div>
 
-          <div v-else class="space-y-8">
+          <div v-else class="space-y-4 sm:space-y-8">
             <div
               v-for="child in children"
               :key="child.id"
-              class="bg-gray-50 p-6 rounded-lg">
+              class="bg-gray-50 p-4 sm:p-6 rounded-lg">
               <div class="mb-4">
-                <h3 class="text-xl font-bold text-gray-900">
+                <h3 class="text-lg sm:text-xl font-bold text-gray-900">
                   {{ child.name }} {{ child.surname }}
                 </h3>
                 <p class="text-gray-600">{{ child.username }}</p>
               </div>
 
               <!-- Child's Stats -->
-              <div class="grid grid-cols-3 gap-4 mb-6">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                   <h4 class="text-sm font-medium text-gray-500">Прогресс</h4>
-                  <p class="text-2xl font-bold text-main-green">
+                  <p class="text-xl sm:text-2xl font-bold text-main-green">
                     {{
                       Math.round(
                         ((child.stats?.completedLessons || 0) /
@@ -232,7 +236,7 @@ onMounted(() => {
                   <h4 class="text-sm font-medium text-gray-500">
                     Выполнено уроков
                   </h4>
-                  <p class="text-2xl font-bold text-main-green">
+                  <p class="text-xl sm:text-2xl font-bold text-main-green">
                     {{ child.stats?.completedLessons || 0 }}/{{
                       child.stats?.totalLessons || 0
                     }}
@@ -242,7 +246,7 @@ onMounted(() => {
                   <h4 class="text-sm font-medium text-gray-500">
                     Средняя оценка
                   </h4>
-                  <p class="text-2xl font-bold text-main-green">
+                  <p class="text-xl sm:text-2xl font-bold text-main-green">
                     {{ child.stats?.averageGrade || 0 }}
                   </p>
                 </div>
@@ -251,7 +255,7 @@ onMounted(() => {
               <!-- Child's Classrooms -->
               <div v-if="child.classrooms?.length" class="space-y-4">
                 <h4 class="font-medium text-gray-900">Классы</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div
                     v-for="classroom in child.classrooms"
                     :key="classroom.id"

@@ -313,7 +313,7 @@ onMounted(() => {
       {{ message.text }}
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-8">
         <p>Loading...</p>
@@ -326,12 +326,15 @@ onMounted(() => {
 
       <!-- Content -->
       <template v-else-if="classroom">
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
-          <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <!-- Header Section -->
+          <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+            <h1
+              class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
               {{ classroom.name }}
             </h1>
-            <div class="space-x-4">
+            <div class="flex flex-col sm:flex-row gap-2">
               <Button @click="showAddStudentModal = true">
                 Добавить ученика
               </Button>
@@ -344,7 +347,7 @@ onMounted(() => {
           <!-- Students Section -->
           <div class="mb-8">
             <h2 class="text-xl font-semibold mb-4">Ученики</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
                 v-for="student in classroom.students"
                 :key="student.id"
@@ -368,20 +371,20 @@ onMounted(() => {
           <!-- Lessons Section -->
           <div class="mb-8">
             <h2 class="text-xl font-semibold mb-4">Уроки</h2>
-            <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
                 v-for="lesson in lessons"
                 :key="lesson.id"
                 class="bg-gray-50 p-4 rounded-lg">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <h3 class="font-medium">{{ lesson.name }}</h3>
+                <div class="flex flex-col h-full">
+                  <div class="flex-1">
+                    <h3 class="font-medium mb-2">{{ lesson.name }}</h3>
                     <p class="text-sm text-gray-600">
                       {{ lesson.description }}
                     </p>
                   </div>
-                  <RouterLink :to="`/lessons/${lesson.id}`">
-                    <Button>Подробнее</Button>
+                  <RouterLink :to="`/lessons/${lesson.id}`" class="mt-4">
+                    <Button class="w-full">Подробнее</Button>
                   </RouterLink>
                 </div>
               </div>
@@ -389,33 +392,33 @@ onMounted(() => {
           </div>
 
           <!-- Grades Section -->
-          <div>
-            <h2 class="text-xl font-semibold mb-4">Оценки</h2>
-            <div class="overflow-x-auto">
+          <div class="overflow-x-auto -mx-4 sm:mx-0">
+            <div class="inline-block min-w-full align-middle">
+              <h2 class="text-xl font-semibold mb-4 px-4 sm:px-0">Оценки</h2>
               <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                   <tr>
                     <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Ученик
                     </th>
                     <th
                       v-for="lesson in lessons"
                       :key="lesson.id"
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       {{ lesson.name }}
                     </th>
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                   <tr v-for="student in classroom.students" :key="student.id">
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
                       {{ student.name }} {{ student.surname }}
                     </td>
                     <td
                       v-for="lesson in lessons"
                       :key="lesson.id"
-                      class="px-6 py-4 whitespace-nowrap relative group">
+                      class="px-3 sm:px-6 py-4 whitespace-nowrap relative group">
                       <div class="relative">
                         <span>
                           {{
@@ -642,7 +645,7 @@ onMounted(() => {
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <h3 class="text-sm font-medium text-gray-500">
-                Выполнено уроков
+                Выполнено уро��ов
               </h3>
               <p class="text-2xl font-bold text-main-green">
                 {{ selectedStudent.completedLessons }}/{{
