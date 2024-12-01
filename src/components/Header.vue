@@ -16,7 +16,6 @@ const handleLogout = () => {
 };
 
 const isTeacherCabinet = computed(() => route.path === "/teacher-cabinet");
-const isStudent = computed(() => userRole.value === UserRole.Student);
 </script>
 
 <template>
@@ -46,9 +45,6 @@ const isStudent = computed(() => userRole.value === UserRole.Student);
         <ul class="flex items-center gap-5">
           <RouterLink to="/cabinet">
             <li class="cursor-pointer">Мой кабинет</li>
-          </RouterLink>
-          <RouterLink v-if="isStudent" :to="`/cabinet`">
-            <li class="cursor-pointer">Мои классы</li>
           </RouterLink>
           <li>
             <Button @click="handleLogout">Выйти</Button>
