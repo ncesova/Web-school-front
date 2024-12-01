@@ -4,12 +4,20 @@ import ParentCabinet from "./ParentCabinet/ParentCabinet.vue";
 import CreateClassroom from "./CreateClassroom/CreateClassroom.vue";
 import MainPage from "./MainPage.vue";
 import SearchTeachers from "./SearchTeachers/SearchTeachers.vue";
+import LoginTeacher from "./LoginTeacher/LoginTeacher.vue";
+import SignupTeacher from "./SignupTeacher/SignupTeacher.vue";
 
 export const routes = [
   {
     path: "/login",
     component: () => import("./LoginParent"),
     name: "LoginParent",
+    meta: {requiresAuth: false},
+  },
+  {
+    path: "/login-student",
+    component: () => import("./LoginStudent"),
+    name: "LoginStudent",
     meta: {requiresAuth: false},
   },
   {
@@ -20,15 +28,11 @@ export const routes = [
   },
   {
     path: "/login-teacher",
-    component: () => import("./LoginTeacher"),
-    name: "LoginTeacher",
-    meta: {requiresAuth: false},
+    component: LoginTeacher,
   },
   {
     path: "/signup-teacher",
-    component: () => import("./SignupTeacher"),
-    name: "SignupTeacher",
-    meta: {requiresAuth: false},
+    component: SignupTeacher,
   },
   {
     path: "/",

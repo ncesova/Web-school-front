@@ -109,6 +109,13 @@ const handleSubmit = async (e: Event) => {
           Нет аккаунта? Зарегистрироваться
         </RouterLink>
       </div>
+      <div class="text-center mt-4">
+        <RouterLink
+          to="/login-student"
+          class="text-sm text-main-green hover:text-main-green/90">
+          Войти как ученик
+        </RouterLink>
+      </div>
     </div>
   </div>
 </template>

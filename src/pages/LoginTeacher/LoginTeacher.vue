@@ -101,12 +101,19 @@ const handleSubmit = async (e: Event) => {
         </div>
       </form>
 
-      <div class="text-center mt-4">
+      <div class="text-center space-y-2">
         <RouterLink
           to="/signup-teacher"
           class="text-sm text-main-green hover:text-main-green/90">
           Нет аккаунта? Зарегистрироваться
         </RouterLink>
+        <div>
+          <RouterLink
+            to="/login"
+            class="text-sm text-gray-600 hover:text-gray-500">
+            Войти как пользователь
+          </RouterLink>
+        </div>
       </div>
     </div>
   </div>
