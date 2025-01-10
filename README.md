@@ -1,5 +1,29 @@
-# Vue 3 + TypeScript + Vite
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+# CodeCouch
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+Решение кейса "Онлайн-школа программирования для детей (ПАО КБ Центр-инвест)"
+
+https://hackathon.rsue.ru/
+
+
+
+
+## Демо
+
+https://web-school-umber.vercel.app
+
+
+## Обязательные требования
+
+- Интерфейс, понятный ребенку
+- 3 вида ролей
+- Игры, лидерборды, журнал оценок
+- Отдельные системы обучения и практики 
+
+
+## Стек
+
+**Фронт:** Vue, Nuxt, Pinia, vue-router, monaco-editor
+
+**Бек:** Node, Express, PostgreSQL
+https://github.com/ncesova/webschool-backend
